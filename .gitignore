@@ -1,0 +1,24 @@
+# Dépendances
+node_modules/
+
+# Builds
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# Env & secrets — JAMAIS commités
+.env
+.env.local
+.env.*.local
+
+# Terraform (le tfstate contient des secrets !)
+infra/**/.terraform/
+infra/**/*.tfstate
+infra/**/*.tfstate.*
+infra/**/*.tfvars
+
+# Logs & divers
+*.log
+.DS_Store
+coverage/
