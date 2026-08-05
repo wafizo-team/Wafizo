@@ -90,3 +90,40 @@ Tout nouveau endpoint suit ce processus :
 4. Implémenter côté Web (`apps/web`)
 
 Ne jamais définir un type métier directement dans `apps/api` ou `apps/web`.
+
+## Base de données locale (dev)
+
+Le développement local utilise PostgreSQL 16 et Redis 7 via Docker Compose.
+
+### Prérequis
+
+Docker et Docker Compose installés. Pour utiliser Docker sans `sudo` (à faire une fois) :
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Puis se déconnecter/reconnecter à la session pour appliquer le changement.
+
+### Démarrer / arrêter
+
+```bash
+pnpm db:up      # démarre PostgreSQL + Redis en arrière-plan
+pnpm db:down    # arrête les conteneurs (les données sont conservées)
+pnpm db:logs    # affiche les logs des conteneurs
+pnpm db:reset   # ⚠️ détruit les données et repart d'une base vierge
+```
+
+### Configuration
+
+Copier le modèle d'environnement et l'adapter si besoin :
+
+```bash
+cp .env.example .env
+```
+
+Valeurs de connexion en local :
+- PostgreSQL : `postgresql://wafizo:wafizo@localhost:5432/wafizo_dev`
+- Redis : `redis://localhost:6379`
+
+Le fichier `.env` n'est jamais commité (il est dans `.gitignore`). Seul `.env.example` sert de modèle partagé.
