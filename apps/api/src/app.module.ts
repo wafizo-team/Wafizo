@@ -5,10 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [
-    PrismaModule,
-    HealthModule,
-  ],
+  imports: [PrismaModule, HealthModule],
   controllers: [AppController],
   providers: [AppService],
 })
