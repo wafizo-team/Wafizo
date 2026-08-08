@@ -49,7 +49,8 @@ async function main() {
     {
       authorName: 'Sophie Martin',
       rating: 5,
-      content: 'Excellentes baguettes tradition et accueil toujours très chaleureux !',
+      content:
+        'Excellentes baguettes tradition et accueil toujours très chaleureux !',
       status: ReviewStatus.PUBLISHED,
       businessId: business.id,
     },
@@ -63,7 +64,8 @@ async function main() {
     {
       authorName: 'Claire Bernard',
       rating: 4,
-      content: 'Très bons gâteaux, dommage qu’il y ait souvent la queue à midi.',
+      content:
+        'Très bons gâteaux, dommage qu’il y ait souvent la queue à midi.',
       status: ReviewStatus.PENDING,
       businessId: business.id,
     },
