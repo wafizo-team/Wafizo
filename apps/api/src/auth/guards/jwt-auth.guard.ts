@@ -1,12 +1,13 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Observable } from 'rxjs';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  canActivate(
+  override canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  ): ReturnType<ParentGuard['canActivate']> {
     return super.canActivate(context);
   }
 }
+
+type ParentGuard = InstanceType<ReturnType<typeof AuthGuard>>;

@@ -1,9 +1,9 @@
-import 'dotenv/config'; // <-- Charge automatiquement le fichier .env
+/* eslint-disable no-console */
+import 'dotenv/config';
 import { PrismaClient, ReviewStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
-// Utilise la variable DATABASE_URL définie dans ton fichier .env
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
