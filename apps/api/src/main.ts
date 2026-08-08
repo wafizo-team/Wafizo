@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './common/filters/http-exception.filter'; // 👈 Changement ici
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,12 +14,12 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.useGlobalFilters(new AllExceptionsFilter()); // 👈 Et ici
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Configuration Swagger
   const config = new DocumentBuilder()
     .setTitle('API Wafizo')
-    .setDescription('Documentation officielle des endpoints de l\'API')
+    .setDescription("Documentation officielle des endpoints de l'API")
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -29,4 +29,5 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
-bootstrap();
+
+void bootstrap();
