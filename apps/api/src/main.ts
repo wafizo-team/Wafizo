@@ -2,11 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter'; // 👈 Changement ici
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ValidationPipe globale (B6)
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -14,8 +14,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new AllExceptionsFilter()); // 👈 Et ici
 
-  // 🚀 Configuration Swagger (B8)
+  // Configuration Swagger
   const config = new DocumentBuilder()
     .setTitle('API Wafizo')
     .setDescription('Documentation officielle des endpoints de l\'API')
