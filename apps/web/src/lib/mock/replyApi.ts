@@ -2,7 +2,7 @@ import { ReplyStatus, ReplyOrigin } from '@wafizo/shared';
 import type { Reply } from '@wafizo/shared';
 
 // Simule B10 : POST .../reply/generate
-export async function generateReply(reviewId: string): Promise<string> {
+export async function generateReply(_reviewId: string): Promise<string> {
   await new Promise((resolve) => setTimeout(resolve, 1200));
 
   const templates = [
