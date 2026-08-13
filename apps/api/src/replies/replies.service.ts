@@ -1,3 +1,4 @@
+import { ReplyStatus } from '@prisma/client';
 import {
   ForbiddenException,
   Injectable,
@@ -11,7 +12,6 @@ export class RepliesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async generateReply(userId: string, reviewId: string) {
-    // 1. Récupérer l'utilisateur et son abonnement
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { subscription: true },
@@ -22,10 +22,9 @@ export class RepliesService {
     }
 
     const subscription = user.subscription;
-    const plan = subscription?.plan || 'FREE';
+    const plan = subscription?.plan ?? 'FREE';
     const generationsUsed = subscription?.aiGenerationsUsed ?? 0;
 
-    // 2. Vérification du quota pour le plan FREE (max 5)
     if (plan === 'FREE' && generationsUsed >= 5) {
       throw new ForbiddenException({
         statusCode: 403,
@@ -35,7 +34,6 @@ export class RepliesService {
       });
     }
 
-    // 3. Récupérer l'avis
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
@@ -44,15 +42,13 @@ export class RepliesService {
       throw new NotFoundException(`Avis ${reviewId} introuvable`);
     }
 
-    // 4. Générer la suggestion de réponse
     let generatedContent = '';
     if (review.rating >= 4) {
-      generatedContent = `Bonjour ${review.authorName || 'client'}, un grand merci pour vos ${review.rating} étoiles ! Nous sommes ravis que votre expérience vous ait plu et espérons vous revoir très bientôt.`;
+      generatedContent = `Bonjour ${review.authorName ?? 'client'}, un grand merci pour vos ${review.rating} étoiles ! Nous sommes ravis que votre expérience vous ait plu et espérons vous revoir très bientôt.`;
     } else {
-      generatedContent = `Bonjour ${review.authorName || 'client'}, merci pour votre retour. Nous sommes désolés que votre expérience n ait pas été parfaite. N hésitez pas à nous contacter directement pour en discuter.`;
+      generatedContent = `Bonjour ${review.authorName ?? 'client'}, merci pour votre retour. Nous sommes désolés que votre expérience n'ait pas été parfaite. N'hésitez pas à nous contacter directement pour en discuter.`;
     }
 
-    // 5. Incrémenter aiGenerationsUsed si un abonnement existe
     if (subscription) {
       await this.prisma.subscription.update({
         where: { id: subscription.id },
@@ -80,7 +76,7 @@ export class RepliesService {
     if (review.reply) {
       return this.prisma.reply.update({
         where: { id: review.reply.id },
-        data: { content: dto.content, status: 'DRAFT' },
+        data: { content: dto.content, status: ReplyStatus.DRAFT },
       });
     }
 
@@ -88,7 +84,7 @@ export class RepliesService {
       data: {
         reviewId,
         content: dto.content,
-        status: 'DRAFT',
+        status: ReplyStatus.DRAFT,
       },
     });
   }
@@ -107,7 +103,7 @@ export class RepliesService {
 
     return this.prisma.reply.update({
       where: { id: review.reply.id },
-      data: { status: 'PUBLISHED' },
+      data: { status: ReplyStatus.PUBLISHED },
     });
   }
 
