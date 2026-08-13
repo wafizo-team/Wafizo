@@ -59,10 +59,7 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return { accessToken, refreshToken };
   }
 
   async refreshTokens(refreshToken: string) {
