@@ -1,14 +1,14 @@
-/* eslint-disable */
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor() {
+  constructor(private readonly authService: AuthService) {
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID || 'dummy-client-id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy-client-secret',
+      clientID: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
       callbackURL:
         process.env.GOOGLE_CALLBACK_URL ||
         'http://localhost:3000/auth/google/callback',
@@ -16,23 +16,28 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  validate(
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
+  async validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: Profile,
     done: VerifyCallback,
-  ): void {
-    const name = profile?.name;
-    const emails = profile?.emails;
-    const photos = profile?.photos;
+  ): Promise<void> {
+    const { name, emails, id, photos } = profile;
 
-    const user = {
-      email: Array.isArray(emails) && emails[0] ? emails[0].value : '',
-      firstName: name?.givenName || '',
-      lastName: name?.familyName || '',
-      picture: Array.isArray(photos) && photos[0] ? photos[0].value : '',
-      accessToken,
+    const formattedName = name
+      ? `${name.givenName || ''} ${name.familyName || ''}`.trim()
+      : 'Utilisateur Google';
+
+    const userProfile = {
+      googleId: id,
+      email: emails && emails[0] ? emails[0].value : '',
+      name: formattedName,
+      picture: photos && photos[0] ? photos[0].value : undefined,
     };
+
+    const user = (await this.authService.findOrCreateUser(
+      userProfile,
+    )) as Express.User;
 
     done(null, user);
   }
