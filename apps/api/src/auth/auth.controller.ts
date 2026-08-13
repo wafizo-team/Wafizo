@@ -1,41 +1,39 @@
-import { Controller, Get, Req } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import type { GoogleUserRequest } from './auth.service';
 import { Public } from './decorators/public.decorator';
 
 interface RequestWithUser {
-  user?: unknown;
+  user: {
+    id: string;
+    email: string;
+  };
 }
 
-@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Get('google')
-  @ApiOperation({ summary: 'Initiation de la connexion via Google OAuth2' })
+  @UseGuards(AuthGuard('google'))
   googleAuth() {}
 
   @Public()
   @Get('google/callback')
-  @ApiOperation({ summary: 'Callback après authentification Google' })
-  googleAuthRedirect(@Req() req: GoogleUserRequest) {
-    return this.authService.googleLogin(req);
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: RequestWithUser) {
+    return this.authService.generateTokens(req.user);
   }
 
-  @ApiBearerAuth()
   @Get('me')
-  @ApiOperation({ summary: "Récupérer le profil de l'utilisateur connecté" })
-  @ApiResponse({ status: 200, description: 'Profil utilisateur récupéré.' })
-  @ApiResponse({ status: 401, description: 'Non autorisé.' })
-  getProfile(@Req() req: RequestWithUser): unknown {
+  getProfile(@Req() req: RequestWithUser) {
     return req.user;
+  }
+
+  @Public()
+  @Post('refresh')
+  async refresh(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshTokens(refreshToken);
   }
 }
