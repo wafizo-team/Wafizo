@@ -44,7 +44,7 @@ export class RepliesService {
 
     let generatedContent = '';
     if (review.rating >= 4) {
-      generatedContent = `Bonjour ${review.authorName ?? 'client'}, un grand merci pour vos ${review.rating} étoiles ! Nous sommes ravis que votre expérience vous ait plu et espérons vous revoir très bientôt.`;
+      generatedContent = `Bonjour ${review.authorName ?? 'client'}, un grand merci pour vos ${String(review.rating)} étoiles ! Nous sommes ravis que votre expérience vous ait plu et espérons vous revoir très bientôt.`;
     } else {
       generatedContent = `Bonjour ${review.authorName ?? 'client'}, merci pour votre retour. Nous sommes désolés que votre expérience n'ait pas été parfaite. N'hésitez pas à nous contacter directement pour en discuter.`;
     }
@@ -73,9 +73,11 @@ export class RepliesService {
       throw new NotFoundException(`Avis ${reviewId} introuvable`);
     }
 
-    if (review.reply) {
+    const existingReply = review.reply;
+
+    if (existingReply) {
       return this.prisma.reply.update({
-        where: { id: review.reply.id },
+        where: { id: existingReply.id },
         data: { content: dto.content, status: ReplyStatus.DRAFT },
       });
     }
@@ -101,8 +103,10 @@ export class RepliesService {
       );
     }
 
+    const existingReply = review.reply;
+
     return this.prisma.reply.update({
-      where: { id: review.reply.id },
+      where: { id: existingReply.id },
       data: { status: ReplyStatus.PUBLISHED },
     });
   }
@@ -119,8 +123,10 @@ export class RepliesService {
       );
     }
 
+    const existingReply = review.reply;
+
     await this.prisma.reply.delete({
-      where: { id: review.reply.id },
+      where: { id: existingReply.id },
     });
 
     return { message: 'Réponse supprimée avec succès' };
