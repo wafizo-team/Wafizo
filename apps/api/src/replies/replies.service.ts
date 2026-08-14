@@ -74,8 +74,8 @@ export class RepliesService {
     }
 
     const existingReply = review.reply;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const content = dto.content as string;
+    const content = dto.content;
+    const content = dto.content;
 
     if (existingReply) {
       return this.prisma.reply.update({
