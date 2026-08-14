@@ -75,7 +75,6 @@ export class RepliesService {
 
     const existingReply = review.reply;
     const content = dto.content;
-    const content = dto.content;
 
     if (existingReply) {
       return this.prisma.reply.update({
