@@ -74,18 +74,20 @@ export class RepliesService {
     }
 
     const existingReply = review.reply;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const content = dto.content as string;
 
     if (existingReply) {
       return this.prisma.reply.update({
         where: { id: existingReply.id },
-        data: { content: dto.content, status: ReplyStatus.DRAFT },
+        data: { content, status: ReplyStatus.DRAFT },
       });
     }
 
     return this.prisma.reply.create({
       data: {
         reviewId,
-        content: dto.content,
+        content,
         status: ReplyStatus.DRAFT,
       },
     });
