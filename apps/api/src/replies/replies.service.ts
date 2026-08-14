@@ -63,7 +63,7 @@ export class RepliesService {
     };
   }
 
-  async upsertReply(reviewId: string, dto: { content: string }) {
+  async upsertReply(reviewId: string, dto: UpdateReplyDto) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
       include: { reply: true },
