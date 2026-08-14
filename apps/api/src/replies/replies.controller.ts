@@ -1,29 +1,55 @@
-import { Controller, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateReplyDto } from './dto/reply.dto';
 import { RepliesService } from './replies.service';
-import { CreateOrUpdateReplyDto } from './dto/create-or-update-reply.dto';
-import { GenerateReplyDto } from './dto/generate-reply.dto';
 
-@Controller('reviews/:id/reply')
+interface AuthenticatedRequest extends Request {
+  user: { id: string };
+}
+
+@ApiTags('Replies')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('reviews/:reviewId/reply')
 export class RepliesController {
   constructor(private readonly repliesService: RepliesService) {}
 
   @Post('generate')
-  generate(@Param('id') id: string, @Body() dto: GenerateReplyDto) {
-    return this.repliesService.generate(id, dto);
+  @ApiOperation({
+    summary: 'Générer une suggestion de réponse avec contrôle des quotas IA',
+  })
+  generate(
+    @Req() req: AuthenticatedRequest,
+    @Param('reviewId') reviewId: string,
+  ) {
+    return this.repliesService.generateReply(req.user.id, reviewId);
   }
 
   @Put()
-  upsert(@Param('id') id: string, @Body() dto: CreateOrUpdateReplyDto) {
-    return this.repliesService.upsert(id, dto);
+  @ApiOperation({ summary: 'Créer ou mettre à jour le brouillon de réponse' })
+  upsert(@Param('reviewId') reviewId: string, @Body() dto: UpdateReplyDto) {
+    return this.repliesService.upsertReply(reviewId, dto);
   }
 
   @Post('publish')
-  publish(@Param('id') id: string) {
-    return this.repliesService.publish(id);
+  @ApiOperation({ summary: 'Publier la réponse' })
+  publish(@Param('reviewId') reviewId: string) {
+    return this.repliesService.publishReply(reviewId);
   }
 
   @Delete()
-  remove(@Param('id') id: string) {
-    return this.repliesService.remove(id);
+  @ApiOperation({ summary: 'Supprimer la réponse d un avis' })
+  remove(@Param('reviewId') reviewId: string) {
+    return this.repliesService.deleteReply(reviewId);
   }
 }
