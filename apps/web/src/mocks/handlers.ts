@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { ReviewStatus, ReplyStatus, ReplyOrigin, Plan, SubscriptionStatus, BusinessConnectionStatus } from '@wafizo/shared';
-import type { Review, MeResponse } from '@wafizo/shared';
+import type { Review, MeResponse, NotificationPreferences } from '@wafizo/shared';
 
 import { mockReviews } from '@/lib/fixtures/reviews';
 
@@ -11,7 +11,14 @@ let reviews: Review[] = [...mockReviews];
 
 // Pour tester W6 : mets 'NOT_CONNECTED' ici pour voir l'onboarding au chargement,
 // ou 'CONNECTED' pour voir le dashboard directement.
-let businessConnectionStatus: BusinessConnectionStatus = BusinessConnectionStatus.NOT_CONNECTED;
+let businessConnectionStatus: BusinessConnectionStatus = BusinessConnectionStatus.CONNECTED;
+
+let notificationPreferences: NotificationPreferences = {
+  emailEnabled: true,
+  smsEnabled: false,
+  phoneNumber: null,
+  minRatingAlert: 3,
+};
 
 export const handlers = [
   // GET /auth/me — simule une session déjà connectée, pour débloquer W5/W6 sans OAuth réel
@@ -48,6 +55,33 @@ export const handlers = [
     await delay(700);
     businessConnectionStatus = BusinessConnectionStatus.CONNECTED;
     return HttpResponse.json({ connectionStatus: businessConnectionStatus });
+  }),
+
+  // GET /me/notification-preferences (B13/W13)
+  http.get(`${API_URL}/me/notification-preferences`, () => {
+    return HttpResponse.json(notificationPreferences);
+  }),
+
+  // PUT /me/notification-preferences (B13/W13)
+  http.put(`${API_URL}/me/notification-preferences`, async ({ request }) => {
+    const body = (await request.json()) as NotificationPreferences;
+
+    // Validation E.164 basique, cohérente avec le contrat (B13)
+    if (body.smsEnabled && body.phoneNumber && !/^\+[1-9]\d{1,14}$/.test(body.phoneNumber)) {
+      return HttpResponse.json(
+        {
+          statusCode: 400,
+          error: 'VALIDATION_ERROR',
+          message: 'Numéro de téléphone invalide',
+          details: [{ field: 'phoneNumber', message: 'Format E.164 attendu, ex: +33612345678' }],
+        },
+        { status: 400 },
+      );
+    }
+
+    await delay(400);
+    notificationPreferences = body;
+    return HttpResponse.json(notificationPreferences);
   }),
 
   // GET /reviews — pagination + filtres + tri, conformes au contrat

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { MeResponse, Paginated, Review, ListReviewsQuery, ReviewStatus } from '@wafizo/shared';
+import type { MeResponse, Paginated, Review, ListReviewsQuery, ReviewStatus, NotificationPreferences } from '@wafizo/shared';
 
 import { apiClient } from './client';
 
@@ -45,3 +45,21 @@ export function useConnectBusiness() {
   });
 }
 
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: ['notification-preferences'],
+    queryFn: () => apiClient.get<NotificationPreferences>('/me/notification-preferences'),
+  });
+}
+
+export function useUpdateNotificationPreferences() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (prefs: NotificationPreferences) =>
+      apiClient.put<NotificationPreferences>('/me/notification-preferences', prefs),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+    },
+  });
+}
