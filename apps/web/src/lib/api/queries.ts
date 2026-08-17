@@ -1,5 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { MeResponse, Paginated, Review, ListReviewsQuery, ReviewStatus, NotificationPreferences } from '@wafizo/shared';
+import type {
+  MeResponse,
+  Paginated,
+  Review,
+  ListReviewsQuery,
+  ReviewStatus,
+  NotificationPreferences,
+  GenerateReplyRequest,
+  PublishReplyResponse,
+} from '@wafizo/shared';
 
 import { apiClient } from './client';
 
@@ -17,11 +26,34 @@ export function useReviews(query: ListReviewsQuery) {
   if (query.limit) params.set('limit', String(query.limit));
   if (query.search) params.set('search', query.search);
   if (query.sort) params.set('sort', query.sort);
+  if (query.hasReply !== undefined) params.set('hasReply', String(query.hasReply));
   query.status?.forEach((s) => params.append('status', s));
+  query.rating?.forEach((r) => params.append('rating', String(r)));
 
   return useQuery({
     queryKey: ['reviews', query],
     queryFn: () => apiClient.get<Paginated<Review>>(`/reviews?${params.toString()}`),
+  });
+}
+
+// Remplace lib/mock/replyApi.ts::generateReply — vrai appel API (MSW en dev)
+export function useGenerateReply() {
+  return useMutation({
+    mutationFn: ({ reviewId, ...body }: { reviewId: string } & GenerateReplyRequest) =>
+      apiClient.post<{ content: string }>(`/reviews/${reviewId}/reply/generate`, body),
+  });
+}
+
+// Remplace lib/mock/replyApi.ts::publishReply — vrai appel API (MSW en dev),
+// invalide le cache 'reviews' pour que la réponse publiée persiste après un refetch
+export function usePublishReply() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
+      apiClient.post<PublishReplyResponse>(`/reviews/${reviewId}/reply/publish`, { content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
   });
 }
 

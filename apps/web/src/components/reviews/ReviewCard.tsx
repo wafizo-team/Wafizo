@@ -1,11 +1,11 @@
-import { useState } from 'react';
 import { Star, EyeOff, RotateCcw, Loader2 } from 'lucide-react';
-import type { Review, ReviewStatus } from '@wafizo/shared';
+import type { Review } from '@wafizo/shared';
 import { ReviewStatus as Status } from '@wafizo/shared';
+import { useState } from 'react';
 
 import ReviewStatusBadge from './ReviewStatusBadge';
 import ReplyComposer from './ReplyComposer';
-import { updateReviewStatus } from '@/lib/mock/reviewApi';
+import { useUpdateReviewStatus } from '@/lib/api/queries';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', {
@@ -15,27 +15,15 @@ function formatDate(iso: string) {
   });
 }
 
-function ReviewCard({
-  review,
-  onStatusChange,
-}: {
-  review: Review;
-  onStatusChange: (reviewId: string, status: ReviewStatus) => void;
-}) {
+function ReviewCard({ review }: { review: Review }) {
   const [publishedReply, setPublishedReply] = useState<string | null>(
     review.reply?.content ?? null,
   );
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const updateStatus = useUpdateReviewStatus();
 
-  async function handleToggleIgnore() {
+  function handleToggleIgnore() {
     const nextStatus = review.status === Status.IGNORED ? Status.NEW : Status.IGNORED;
-    setIsUpdatingStatus(true);
-    try {
-      await updateReviewStatus(review.id, nextStatus);
-      onStatusChange(review.id, nextStatus);
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+    updateStatus.mutate({ id: review.id, status: nextStatus });
   }
 
   return (
@@ -71,11 +59,11 @@ function ReviewCard({
             <button
               type="button"
               onClick={handleToggleIgnore}
-              disabled={isUpdatingStatus}
+              disabled={updateStatus.isPending}
               title={review.status === Status.IGNORED ? 'Réactiver cet avis' : 'Ignorer cet avis'}
               className="rounded-md p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-50"
             >
-              {isUpdatingStatus ? (
+              {updateStatus.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : review.status === Status.IGNORED ? (
                 <RotateCcw className="h-4 w-4" />

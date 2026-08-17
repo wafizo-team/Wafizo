@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { RefreshCw, Send, Loader2, AlertCircle } from 'lucide-react';
 
-import { generateReply, publishReply } from '@/lib/mock/replyApi';
+import { useGenerateReply, usePublishReply } from '@/lib/api/queries';
 
 type ComposerState = 'idle' | 'generating' | 'editing' | 'publishing' | 'published' | 'failed';
 
@@ -14,12 +14,14 @@ function ReplyComposer({
 }) {
   const [state, setState] = useState<ComposerState>('idle');
   const [content, setContent] = useState('');
+  const generateReply = useGenerateReply();
+  const publishReply = usePublishReply();
 
   async function handleGenerate() {
     setState('generating');
     try {
-      const text = await generateReply(reviewId);
-      setContent(text);
+      const result = await generateReply.mutateAsync({ reviewId });
+      setContent(result.content);
       setState('editing');
     } catch {
       setState('failed');
@@ -30,9 +32,9 @@ function ReplyComposer({
     if (!content.trim()) return;
     setState('publishing');
     try {
-      const reply = await publishReply(reviewId, content);
+      const result = await publishReply.mutateAsync({ reviewId, content });
       setState('published');
-      onPublished(reply.content);
+      onPublished(result.reply.content);
     } catch {
       setState('failed');
     }

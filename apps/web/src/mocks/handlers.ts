@@ -1,10 +1,30 @@
 import { http, HttpResponse } from 'msw';
-import { ReviewStatus, ReplyStatus, ReplyOrigin, Plan, SubscriptionStatus, BusinessConnectionStatus } from '@wafizo/shared';
-import type { Review, MeResponse, NotificationPreferences } from '@wafizo/shared';
+import {
+  ReviewStatus,
+  ReplyStatus,
+  ReplyOrigin,
+  Plan,
+  SubscriptionStatus,
+  BusinessConnectionStatus,
+  ApiErrorCode,
+} from '@wafizo/shared';
+import type {
+  Review,
+  MeResponse,
+  NotificationPreferences,
+  UpdateReviewRequest,
+  ApiError,
+  HealthResponse,
+} from '@wafizo/shared';
 
 import { mockReviews } from '@/lib/fixtures/reviews';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+
+// Passe à true quand tu attaques W2 (client API + refresh token) pour simuler
+// les 401 (UNAUTHENTICATED / TOKEN_EXPIRED) sur les routes protégées.
+// Reste à false pour continuer à dev les pages sans se soucier de l'auth.
+const SIMULATE_AUTH = false;
 
 // État en mémoire, mutable pendant la session de dev (persiste entre les requêtes, pas entre les reloads)
 let reviews: Review[] = [...mockReviews];
@@ -20,9 +40,60 @@ let notificationPreferences: NotificationPreferences = {
   minRatingAlert: 3,
 };
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function apiError(statusCode: number, error: ApiErrorCode, message: string, details?: ApiError['details']) {
+  const body: ApiError = { statusCode, error, message, ...(details ? { details } : {}) };
+  return HttpResponse.json(body, { status: statusCode });
+}
+
+// À activer avec SIMULATE_AUTH. Convention de test :
+//   Authorization absent           -> 401 UNAUTHENTICATED
+//   Authorization: Bearer expired  -> 401 TOKEN_EXPIRED
+//   tout le reste                  -> ok
+function checkAuth(request: Request) {
+  if (!SIMULATE_AUTH) return null;
+
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) {
+    return apiError(401, ApiErrorCode.UNAUTHENTICATED, 'Authentification requise');
+  }
+  if (authHeader === 'Bearer expired') {
+    return apiError(401, ApiErrorCode.TOKEN_EXPIRED, 'Le token a expiré');
+  }
+  return null;
+}
+
 export const handlers = [
+  // GET /health
+  http.get(`${API_URL}/health`, () => {
+    const response: HealthResponse = { status: 'ok', timestamp: new Date().toISOString() };
+    return HttpResponse.json(response);
+  }),
+
+  // POST /auth/refresh
+  // Aligné sur client.ts qui envoie { refreshToken } dans le body (et non un header).
+  // ⚠️ Choix à valider avec le back : un refresh token lisible en JS (localStorage + body)
+  // est moins sûr qu'un cookie httpOnly envoyé automatiquement par le navigateur.
+  // Convention de test (avec SIMULATE_AUTH = true) : refreshToken === 'invalid-refresh' -> 401 REFRESH_INVALID
+  http.post(`${API_URL}/auth/refresh`, async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as { refreshToken?: string };
+
+    if (SIMULATE_AUTH && body.refreshToken === 'invalid-refresh') {
+      return apiError(401, ApiErrorCode.REFRESH_INVALID, 'Refresh token invalide');
+    }
+
+    await delay(300);
+    return HttpResponse.json({ accessToken: 'mock-access-token', expiresIn: 3600 });
+  }),
+
   // GET /auth/me — simule une session déjà connectée, pour débloquer W5/W6 sans OAuth réel
-  http.get(`${API_URL}/auth/me`, () => {
+  http.get(`${API_URL}/auth/me`, ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     const response: MeResponse = {
       user: {
         id: 'u1',
@@ -51,6 +122,8 @@ export const handlers = [
   }),
 
   // POST /business/connect-google — simule la connexion de la fiche (W6)
+  // ⚠️ Endpoint absent de packages/shared/dto.ts — à faire ajouter au contrat par le back
+  // (ou vérifier qu'il existe sous un autre nom) avant de considérer W6 "prêt".
   http.post(`${API_URL}/business/connect-google`, async () => {
     await delay(700);
     businessConnectionStatus = BusinessConnectionStatus.CONNECTED;
@@ -58,25 +131,24 @@ export const handlers = [
   }),
 
   // GET /me/notification-preferences (B13/W13)
-  http.get(`${API_URL}/me/notification-preferences`, () => {
+  http.get(`${API_URL}/me/notification-preferences`, ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
     return HttpResponse.json(notificationPreferences);
   }),
 
   // PUT /me/notification-preferences (B13/W13)
   http.put(`${API_URL}/me/notification-preferences`, async ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     const body = (await request.json()) as NotificationPreferences;
 
     // Validation E.164 basique, cohérente avec le contrat (B13)
     if (body.smsEnabled && body.phoneNumber && !/^\+[1-9]\d{1,14}$/.test(body.phoneNumber)) {
-      return HttpResponse.json(
-        {
-          statusCode: 400,
-          error: 'VALIDATION_ERROR',
-          message: 'Numéro de téléphone invalide',
-          details: [{ field: 'phoneNumber', message: 'Format E.164 attendu, ex: +33612345678' }],
-        },
-        { status: 400 },
-      );
+      return apiError(400, ApiErrorCode.VALIDATION_ERROR, 'Numéro de téléphone invalide', [
+        { field: 'phoneNumber', message: 'Format E.164 attendu, ex: +33612345678' },
+      ]);
     }
 
     await delay(400);
@@ -84,12 +156,17 @@ export const handlers = [
     return HttpResponse.json(notificationPreferences);
   }),
 
-  // GET /reviews — pagination + filtres + tri, conformes au contrat
+  // GET /reviews — pagination + filtres (status, rating, hasReply, search) + tri, conformes au contrat
   http.get(`${API_URL}/reviews`, ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     const url = new URL(request.url);
     const page = Number(url.searchParams.get('page') ?? '1');
     const limit = Number(url.searchParams.get('limit') ?? '20');
     const statusParams = url.searchParams.getAll('status');
+    const ratingParams = url.searchParams.getAll('rating').map(Number).filter((n) => !Number.isNaN(n));
+    const hasReplyParam = url.searchParams.get('hasReply');
     const search = url.searchParams.get('search')?.toLowerCase();
     const sort = url.searchParams.get('sort') ?? 'publishedAt:desc';
 
@@ -97,6 +174,15 @@ export const handlers = [
 
     if (statusParams.length > 0) {
       result = result.filter((r) => statusParams.includes(r.status));
+    }
+
+    if (ratingParams.length > 0) {
+      result = result.filter((r) => ratingParams.includes(r.rating));
+    }
+
+    if (hasReplyParam !== null) {
+      const hasReply = hasReplyParam === 'true';
+      result = result.filter((r) => (r.reply !== null) === hasReply);
     }
 
     if (search) {
@@ -131,27 +217,27 @@ export const handlers = [
   }),
 
   // GET /reviews/:id
-  http.get(`${API_URL}/reviews/:id`, ({ params }) => {
+  http.get(`${API_URL}/reviews/:id`, ({ params, request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     const review = reviews.find((r) => r.id === params.id);
     if (!review) {
-      return HttpResponse.json(
-        { statusCode: 404, error: 'NOT_FOUND', message: 'Avis introuvable' },
-        { status: 404 },
-      );
+      return apiError(404, ApiErrorCode.NOT_FOUND, 'Avis introuvable');
     }
     return HttpResponse.json(review);
   }),
 
-  // PATCH /reviews/:id — statut NEW/IGNORED uniquement (contrat)
+  // PATCH /reviews/:id — statut NEW/IGNORED uniquement (contrat : UpdateReviewRequest)
   http.patch(`${API_URL}/reviews/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as { status: ReviewStatus };
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
+    const body = (await request.json()) as UpdateReviewRequest;
     const index = reviews.findIndex((r) => r.id === params.id);
 
     if (index === -1) {
-      return HttpResponse.json(
-        { statusCode: 404, error: 'NOT_FOUND', message: 'Avis introuvable' },
-        { status: 404 },
-      );
+      return apiError(404, ApiErrorCode.NOT_FOUND, 'Avis introuvable');
     }
 
     reviews[index] = { ...reviews[index], status: body.status };
@@ -159,7 +245,13 @@ export const handlers = [
   }),
 
   // POST /reviews/:id/reply/generate
-  http.post(`${API_URL}/reviews/:id/reply/generate`, async () => {
+  // ⚠️ Le contrat définit GenerateReplyRequest mais pas de type de réponse dédié.
+  // On renvoie { content: string } par choix — à confirmer avec l'équipe / ajouter au contrat
+  // pour que W2 sache exactement à quoi s'attendre.
+  http.post(`${API_URL}/reviews/:id/reply/generate`, async ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     await delay(800);
     const templates = [
       'Merci beaucoup pour votre retour, ça nous fait vraiment plaisir !',
@@ -173,14 +265,14 @@ export const handlers = [
 
   // POST /reviews/:id/reply/publish
   http.post(`${API_URL}/reviews/:id/reply/publish`, async ({ params, request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
     const body = (await request.json()) as { content: string };
     const index = reviews.findIndex((r) => r.id === params.id);
 
     if (index === -1) {
-      return HttpResponse.json(
-        { statusCode: 404, error: 'NOT_FOUND', message: 'Avis introuvable' },
-        { status: 404 },
-      );
+      return apiError(404, ApiErrorCode.NOT_FOUND, 'Avis introuvable');
     }
 
     const reply = {
@@ -199,7 +291,3 @@ export const handlers = [
     return HttpResponse.json({ reply, jobId: `job-${Date.now()}` });
   }),
 ];
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}

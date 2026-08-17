@@ -56,6 +56,9 @@ async function request<T>(
     }
     setAccessToken(null);
     window.location.href = '/login';
+    // On stoppe ici : une redirection est en cours, inutile de lever une erreur
+    // en plus (ça évite un flash d'erreur dans l'UI pendant la navigation).
+    return new Promise<T>(() => {});
   }
 
   if (!response.ok) {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ReviewStatus, ReviewSort } from '@wafizo/shared';
 
-import { useReviews, useUpdateReviewStatus } from '@/lib/api/queries';
+import { useReviews } from '@/lib/api/queries';
 import ReviewCard from '@/components/reviews/ReviewCard';
 
 const statusFilters: { label: string; value: ReviewStatus | 'ALL' }[] = [
@@ -23,12 +23,6 @@ function ReviewsPage() {
     page: 1,
     limit: 50,
   });
-
-  const updateStatus = useUpdateReviewStatus();
-
-  function handleStatusChange(reviewId: string, status: ReviewStatus) {
-    updateStatus.mutate({ id: reviewId, status });
-  }
 
   return (
     <div>
@@ -92,7 +86,7 @@ function ReviewsPage() {
       {data && data.data.length > 0 && (
         <div className="space-y-4">
           {data.data.map((review) => (
-            <ReviewCard key={review.id} review={review} onStatusChange={handleStatusChange} />
+            <ReviewCard key={review.id} review={review} />
           ))}
         </div>
       )}
