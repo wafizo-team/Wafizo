@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ReviewStatus, ReviewSort } from '@wafizo/shared';
 
-import { mockReviews } from '@/lib/fixtures/reviews';
+import { useReviews, useUpdateReviewStatus } from '@/lib/api/queries';
 import ReviewCard from '@/components/reviews/ReviewCard';
 
 const statusFilters: { label: string; value: ReviewStatus | 'ALL' }[] = [
@@ -16,38 +16,19 @@ function ReviewsPage() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<ReviewSort>(ReviewSort.PUBLISHED_AT_DESC);
 
-  const filteredReviews = useMemo(() => {
-    let result = [...mockReviews];
+  const { data, isLoading, isError } = useReviews({
+    status: statusFilter === 'ALL' ? undefined : [statusFilter],
+    search: search.trim() || undefined,
+    sort,
+    page: 1,
+    limit: 50,
+  });
 
-    if (statusFilter !== 'ALL') {
-      result = result.filter((r) => r.status === statusFilter);
-    }
+  const updateStatus = useUpdateReviewStatus();
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.authorName.toLowerCase().includes(q) ||
-          r.comment?.toLowerCase().includes(q),
-      );
-    }
-
-    result.sort((a, b) => {
-      switch (sort) {
-        case ReviewSort.PUBLISHED_AT_ASC:
-          return a.publishedAt.localeCompare(b.publishedAt);
-        case ReviewSort.RATING_ASC:
-          return a.rating - b.rating;
-        case ReviewSort.RATING_DESC:
-          return b.rating - a.rating;
-        case ReviewSort.PUBLISHED_AT_DESC:
-        default:
-          return b.publishedAt.localeCompare(a.publishedAt);
-      }
-    });
-
-    return result;
-  }, [statusFilter, search, sort]);
+  function handleStatusChange(reviewId: string, status: ReviewStatus) {
+    updateStatus.mutate({ id: reviewId, status });
+  }
 
   return (
     <div>
@@ -96,12 +77,22 @@ function ReviewsPage() {
         </select>
       </div>
 
-      {filteredReviews.length === 0 ? (
+      {isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
+
+      {isError && (
+        <p className="text-sm text-red-600">
+          Impossible de charger les avis. Réessayez plus tard.
+        </p>
+      )}
+
+      {data && data.data.length === 0 && (
         <p className="text-sm text-muted-foreground">Aucun avis ne correspond à ces critères.</p>
-      ) : (
+      )}
+
+      {data && data.data.length > 0 && (
         <div className="space-y-4">
-          {filteredReviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+          {data.data.map((review) => (
+            <ReviewCard key={review.id} review={review} onStatusChange={handleStatusChange} />
           ))}
         </div>
       )}
