@@ -25,6 +25,13 @@ export function setAccessToken(token: string | null) {
   }
 }
 
+export function setRefreshToken(token: string | null) {
+  if (token) {
+    localStorage.setItem('wafizo_refresh_token', token);
+  } else {
+    localStorage.removeItem('wafizo_refresh_token');
+  }
+}
 async function request<T>(
   path: string,
   options: RequestInit = {},
