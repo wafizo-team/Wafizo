@@ -9,6 +9,10 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
 // État en mémoire, mutable pendant la session de dev (persiste entre les requêtes, pas entre les reloads)
 let reviews: Review[] = [...mockReviews];
 
+// Pour tester W6 : mets 'NOT_CONNECTED' ici pour voir l'onboarding au chargement,
+// ou 'CONNECTED' pour voir le dashboard directement.
+let businessConnectionStatus: BusinessConnectionStatus = BusinessConnectionStatus.NOT_CONNECTED;
+
 export const handlers = [
   // GET /auth/me — simule une session déjà connectée, pour débloquer W5/W6 sans OAuth réel
   http.get(`${API_URL}/auth/me`, () => {
@@ -24,9 +28,9 @@ export const handlers = [
         id: 'b1',
         name: 'Mon Commerce',
         address: '12 rue de la République, Lille',
-        googleLocationId: 'gloc-123',
-        connectionStatus: BusinessConnectionStatus.CONNECTED,
-        lastSyncAt: '2026-08-10T09:00:00.000Z',
+        googleLocationId: businessConnectionStatus === BusinessConnectionStatus.CONNECTED ? 'gloc-123' : null,
+        connectionStatus: businessConnectionStatus,
+        lastSyncAt: businessConnectionStatus === BusinessConnectionStatus.CONNECTED ? '2026-08-10T09:00:00.000Z' : null,
         createdAt: '2026-01-01T00:00:00.000Z',
       },
       subscription: {
@@ -37,6 +41,13 @@ export const handlers = [
       },
     };
     return HttpResponse.json(response);
+  }),
+
+  // POST /business/connect-google — simule la connexion de la fiche (W6)
+  http.post(`${API_URL}/business/connect-google`, async () => {
+    await delay(700);
+    businessConnectionStatus = BusinessConnectionStatus.CONNECTED;
+    return HttpResponse.json({ connectionStatus: businessConnectionStatus });
   }),
 
   // GET /reviews — pagination + filtres + tri, conformes au contrat

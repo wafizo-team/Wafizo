@@ -35,3 +35,13 @@ export function useUpdateReviewStatus() {
     },
   });
 }
+export function useConnectBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiClient.post<{ connectionStatus: string }>('/business/connect-google'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
+}
+
