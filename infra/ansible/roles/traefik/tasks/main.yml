@@ -1,0 +1,41 @@
+---
+# ─── Namespace Traefik ────────────────────────────────────────────────────────
+- name: Créer le namespace traefik
+  shell: kubectl create namespace traefik --dry-run=client -o yaml | kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Repo Helm ────────────────────────────────────────────────────────────────
+- name: Ajouter le repo Helm Traefik
+  shell: helm repo add traefik https://helm.traefik.io/traefik
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Mettre à jour les repos Helm
+  shell: helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Installation Traefik ─────────────────────────────────────────────────────
+- name: Installer Traefik via Helm
+  shell: |
+    helm upgrade --install traefik traefik/traefik \
+      --namespace traefik \
+      --set deployment.replicas=1 \
+      --set ports.web.redirectTo.port=websecure \
+      --set ports.websecure.tls.enabled=true \
+      --set logs.general.level=INFO \
+      --wait
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Vérification ─────────────────────────────────────────────────────────────
+- name: Vérifier que Traefik est running
+  shell: kubectl get pods -n traefik
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: traefik_status
+
+- name: Afficher le statut Traefik
+  debug:
+    msg: "{{ traefik_status.stdout }}"

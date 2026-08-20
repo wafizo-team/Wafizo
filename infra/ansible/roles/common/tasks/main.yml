@@ -1,0 +1,84 @@
+---
+# ─── Mise à jour du système ───────────────────────────────────────────────────
+- name: Mettre à jour les paquets
+  apt:
+    update_cache: yes
+    upgrade: dist
+    cache_valid_time: 3600
+
+# ─── Paquets de base ──────────────────────────────────────────────────────────
+- name: Installer les paquets essentiels
+  apt:
+    name:
+      - curl
+      - wget
+      - git
+      - vim
+      - htop
+      - unzip
+      - fail2ban
+      - ufw
+      - python3
+      - python3-pip
+    state: present
+
+# ─── Fail2ban ─────────────────────────────────────────────────────────────────
+- name: Configurer fail2ban SSH
+  copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      port    = ssh
+      filter  = sshd
+      maxretry = 3
+      bantime  = 3600
+      findtime = 600
+
+- name: Démarrer et activer fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+
+# ─── Firewall UFW ─────────────────────────────────────────────────────────────
+- name: Autoriser SSH
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Autoriser HTTP
+  ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: Autoriser HTTPS
+  ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
+
+- name: Autoriser API K3s
+  ufw:
+    rule: allow
+    port: "6443"
+    proto: tcp
+
+- name: Activer UFW
+  ufw:
+    state: enabled
+    policy: deny
+
+# ─── Optimisations système ────────────────────────────────────────────────────
+- name: Configurer sysctl pour K3s
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { key: "net.ipv4.ip_forward", value: "1" }
+    - { key: "net.bridge.bridge-nf-call-iptables", value: "1" }
+    - { key: "vm.swappiness", value: "10" }
