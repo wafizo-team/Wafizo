@@ -4,16 +4,17 @@ Plateforme SaaS de gestion d'avis Google pour les commerçants indépendants fra
 
 ## Stack technique
 
-| Couche | Technologie |
-|---|---|
-| API | NestJS (Node 22, TypeScript) |
-| Web app | React + Vite (TypeScript) |
-| Landing | React + Vite |
+| Couche         | Technologie                          |
+| -------------- | ------------------------------------ |
+| API            | NestJS (Node 22, TypeScript)         |
+| Web app        | React + Vite (TypeScript)            |
+| Landing        | React + Vite                         |
 | Types partagés | `packages/shared` (source de vérité) |
-| Infra | Terraform + Ansible |
-| CI | GitHub Actions |
+| Infra          | Terraform + Ansible                  |
+| CI             | GitHub Actions                       |
 
 ## Structure du monorepo
+
 Wafizo/
 ├── apps/
 │ ├── api/ # Backend NestJS
@@ -27,6 +28,7 @@ Wafizo/
 ├── tsconfig.base.json
 ├── eslint.config.js
 └── .prettierrc
+
 ## Prérequis
 
 - Node.js >= 22
@@ -79,11 +81,13 @@ fix: corriger la synchronisation des avis
 chore: mettre à jour les dépendances
 ci: améliorer le workflow GitHub Actions
 docs: mettre à jour le README
+
 ### Contrat d'API
 
 > **`packages/shared` est la source de vérité.**
 
 Tout nouveau endpoint suit ce processus :
+
 1. Définir les types/DTOs dans `packages/shared`
 2. Faire valider le contrat par l'équipe (PR dédiée)
 3. Implémenter côté API (`apps/api`)
@@ -123,6 +127,7 @@ cp .env.example .env
 ```
 
 Valeurs de connexion en local :
+
 - PostgreSQL : `postgresql://wafizo:wafizo@localhost:5432/wafizo_dev`
 - Redis : `redis://localhost:6379`
 
