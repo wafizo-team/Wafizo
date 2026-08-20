@@ -52,7 +52,7 @@ export function usePublishReply() {
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
       apiClient.post<PublishReplyResponse>(`/reviews/${reviewId}/reply/publish`, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
 }
@@ -63,7 +63,7 @@ export function useUpdateReviewStatus() {
     mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) =>
       apiClient.patch<Review>(`/reviews/${id}`, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
 }
@@ -72,11 +72,10 @@ export function useConnectBusiness() {
   return useMutation({
     mutationFn: () => apiClient.post<{ connectionStatus: string }>('/business/connect-google'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['me'] });
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }
-
 
 export function useNotificationPreferences() {
   return useQuery({
@@ -91,7 +90,7 @@ export function useUpdateNotificationPreferences() {
     mutationFn: (prefs: NotificationPreferences) =>
       apiClient.put<NotificationPreferences>('/me/notification-preferences', prefs),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+      void queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
     },
   });
 }

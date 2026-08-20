@@ -32,9 +32,7 @@ function ReceiptCard() {
           <span className="font-['Inter'] text-xs font-medium uppercase tracking-wide text-[#16213E]/50">
             Avis reçu
           </span>
-          <span className="font-['IBM_Plex_Mono',monospace] text-xs text-[#16213E]/40">
-            08:14
-          </span>
+          <span className="font-['IBM_Plex_Mono',monospace] text-xs text-[#16213E]/40">08:14</span>
         </div>
 
         <div className="mt-2 flex items-center gap-2">
@@ -43,7 +41,9 @@ function ReceiptCard() {
           </span>
           <div className="flex gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} className="text-[#E0A63A]">★</span>
+              <span key={i} className="text-[#E0A63A]">
+                ★
+              </span>
             ))}
           </div>
         </div>
@@ -67,9 +67,7 @@ function ReceiptCard() {
             Votre réponse
           </span>
           {published && (
-            <span className="font-['Inter'] text-xs font-semibold text-[#4B7A5B]">
-              ✓ Publiée
-            </span>
+            <span className="font-['Inter'] text-xs font-semibold text-[#4B7A5B]">✓ Publiée</span>
           )}
         </div>
 

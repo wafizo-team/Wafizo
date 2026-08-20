@@ -19,7 +19,7 @@ import type {
 
 import { mockReviews } from '@/lib/fixtures/reviews';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333';
 
 // Passe à true quand tu attaques W2 (client API + refresh token) pour simuler
 // les 401 (UNAUTHENTICATED / TOKEN_EXPIRED) sur les routes protégées.
@@ -27,7 +27,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
 const SIMULATE_AUTH = false;
 
 // État en mémoire, mutable pendant la session de dev (persiste entre les requêtes, pas entre les reloads)
-let reviews: Review[] = [...mockReviews];
+const reviews: Review[] = [...mockReviews];
 
 // Pour tester W6 : mets 'NOT_CONNECTED' ici pour voir l'onboarding au chargement,
 // ou 'CONNECTED' pour voir le dashboard directement.
@@ -40,11 +40,16 @@ let notificationPreferences: NotificationPreferences = {
   minRatingAlert: 3,
 };
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function apiError(statusCode: number, error: ApiErrorCode, message: string, details?: ApiError['details']) {
+function apiError(
+  statusCode: number,
+  error: ApiErrorCode,
+  message: string,
+  details?: ApiError['details'],
+) {
   const body: ApiError = { statusCode, error, message, ...(details ? { details } : {}) };
   return HttpResponse.json(body, { status: statusCode });
 }
@@ -106,9 +111,13 @@ export const handlers = [
         id: 'b1',
         name: 'Mon Commerce',
         address: '12 rue de la République, Lille',
-        googleLocationId: businessConnectionStatus === BusinessConnectionStatus.CONNECTED ? 'gloc-123' : null,
+        googleLocationId:
+          businessConnectionStatus === BusinessConnectionStatus.CONNECTED ? 'gloc-123' : null,
         connectionStatus: businessConnectionStatus,
-        lastSyncAt: businessConnectionStatus === BusinessConnectionStatus.CONNECTED ? '2026-08-10T09:00:00.000Z' : null,
+        lastSyncAt:
+          businessConnectionStatus === BusinessConnectionStatus.CONNECTED
+            ? '2026-08-10T09:00:00.000Z'
+            : null,
         createdAt: '2026-01-01T00:00:00.000Z',
       },
       subscription: {
@@ -165,7 +174,10 @@ export const handlers = [
     const page = Number(url.searchParams.get('page') ?? '1');
     const limit = Number(url.searchParams.get('limit') ?? '20');
     const statusParams = url.searchParams.getAll('status');
-    const ratingParams = url.searchParams.getAll('rating').map(Number).filter((n) => !Number.isNaN(n));
+    const ratingParams = url.searchParams
+      .getAll('rating')
+      .map(Number)
+      .filter((n) => !Number.isNaN(n));
     const hasReplyParam = url.searchParams.get('hasReply');
     const search = url.searchParams.get('search')?.toLowerCase();
     const sort = url.searchParams.get('sort') ?? 'publishedAt:desc';
@@ -188,8 +200,7 @@ export const handlers = [
     if (search) {
       result = result.filter(
         (r) =>
-          r.authorName.toLowerCase().includes(search) ||
-          r.comment?.toLowerCase().includes(search),
+          r.authorName.toLowerCase().includes(search) || r.comment?.toLowerCase().includes(search),
       );
     }
 
@@ -276,7 +287,7 @@ export const handlers = [
     }
 
     const reply = {
-      id: `reply-${params.id}`,
+      id: `reply-${String(params.id)}`,
       reviewId: params.id as string,
       content: body.content,
       status: ReplyStatus.PUBLISHED,

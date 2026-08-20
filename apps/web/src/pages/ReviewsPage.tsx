@@ -74,9 +74,7 @@ function ReviewsPage() {
       {isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
 
       {isError && (
-        <p className="text-sm text-red-600">
-          Impossible de charger les avis. Réessayez plus tard.
-        </p>
+        <p className="text-sm text-red-600">Impossible de charger les avis. Réessayez plus tard.</p>
       )}
 
       {data && data.data.length === 0 && (

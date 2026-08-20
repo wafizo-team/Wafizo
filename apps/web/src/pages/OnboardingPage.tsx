@@ -8,7 +8,7 @@ function OnboardingPage() {
 
   async function handleConnect() {
     await connectBusiness.mutateAsync();
-    navigate('/', { replace: true });
+    void navigate('/', { replace: true });
   }
 
   return (
@@ -16,11 +16,16 @@ function OnboardingPage() {
       <div className="w-full max-w-md rounded-xl border bg-card p-8 text-center shadow-sm">
         <h1 className="text-2xl font-bold">Bienvenue sur Wafizo</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Pour commencer à recevoir et répondre à vos avis, connectez votre fiche
-          Google Business Profile.
+          Pour commencer à recevoir et répondre à vos avis, connectez votre fiche Google Business
+          Profile.
         </p>
 
-        <button type="button" onClick={handleConnect} disabled={connectBusiness.isPending} className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+        <button
+          type="button"
+          onClick={() => void handleConnect()}
+          disabled={connectBusiness.isPending}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+        >
           {connectBusiness.isPending ? 'Connexion...' : 'Connecter ma fiche Google'}
         </button>
 
