@@ -14,9 +14,9 @@ function AuthCallbackPage() {
     if (accessToken && refreshToken) {
       setAccessToken(accessToken);
       setRefreshToken(refreshToken);
-      navigate('/', { replace: true });
+      void navigate('/', { replace: true });
     } else {
-      navigate('/login?error=missing_tokens', { replace: true });
+      void navigate('/login?error=missing_tokens', { replace: true });
     }
   }, [searchParams, navigate]);
 

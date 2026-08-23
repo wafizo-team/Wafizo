@@ -1,6 +1,7 @@
 import type { ApiError } from '@wafizo/shared';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333';
+
 export class ApiRequestError extends Error {
   status: number;
   body: ApiError;
@@ -32,11 +33,8 @@ export function setRefreshToken(token: string | null) {
     localStorage.removeItem('wafizo_refresh_token');
   }
 }
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-  retry = true,
-): Promise<T> {
+
+async function request<T>(path: string, options: RequestInit = {}, retry = true): Promise<T> {
   const token = getAccessToken();
 
   const response = await fetch(`${API_URL}${path}`, {
@@ -49,15 +47,12 @@ async function request<T>(
   });
 
   if (response.status === 401 && retry) {
-    // Tentative de refresh — sera affiné une fois /auth/refresh testé en réel
     const refreshed = await tryRefresh();
     if (refreshed) {
       return request<T>(path, options, false);
     }
     setAccessToken(null);
     window.location.href = '/login';
-    // On stoppe ici : une redirection est en cours, inutile de lever une erreur
-    // en plus (ça évite un flash d'erreur dans l'UI pendant la navigation).
     return new Promise<T>(() => {});
   }
 
@@ -67,10 +62,12 @@ async function request<T>(
   }
 
   if (response.status === 204) {
-    return undefined as T;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    return undefined as unknown as T;
   }
 
-  return response.json() as Promise<T>;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return response.json();
 }
 
 async function tryRefresh(): Promise<boolean> {
@@ -85,7 +82,7 @@ async function tryRefresh(): Promise<boolean> {
     });
     if (!res.ok) return false;
 
-    const data = await res.json();
+    const data = (await res.json()) as { accessToken: string };
     setAccessToken(data.accessToken);
     return true;
   } catch {

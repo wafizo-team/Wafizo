@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { RefreshCw, Send, Loader2, AlertCircle } from 'lucide-react';
-
 import { useGenerateReply, usePublishReply } from '@/lib/api/queries';
 
 type ComposerState = 'idle' | 'generating' | 'editing' | 'publishing' | 'published' | 'failed';
@@ -44,7 +43,7 @@ function ReplyComposer({
     return (
       <button
         type="button"
-        onClick={handleGenerate}
+        onClick={() => void handleGenerate()}
         className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
       >
         Répondre
@@ -70,7 +69,7 @@ function ReplyComposer({
         </span>
         <button
           type="button"
-          onClick={content ? handlePublish : handleGenerate}
+          onClick={() => void (content ? handlePublish() : handleGenerate())}
           className="rounded-md bg-red-100 px-2.5 py-1 text-xs font-medium hover:bg-red-200"
         >
           Réessayer
@@ -92,7 +91,7 @@ function ReplyComposer({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={handlePublish}
+          onClick={() => void handlePublish()}
           disabled={state === 'publishing' || !content.trim()}
           className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
@@ -111,7 +110,7 @@ function ReplyComposer({
 
         <button
           type="button"
-          onClick={handleGenerate}
+          onClick={() => void handleGenerate()}
           disabled={state === 'publishing'}
           className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted disabled:opacity-50"
         >

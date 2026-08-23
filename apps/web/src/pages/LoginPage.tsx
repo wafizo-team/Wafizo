@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333';
 
 function LoginPage() {
   return (
@@ -9,7 +9,6 @@ function LoginPage() {
           Connectez-vous pour gérer les avis de votre commerce.
         </p>
 
-        
         <a
           href={`${API_URL}/auth/google`}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border bg-background px-4 py-2.5 text-sm font-medium hover:bg-muted"

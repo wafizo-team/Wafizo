@@ -75,9 +75,7 @@ function ReviewCard({ review }: { review: Review }) {
         </div>
       </div>
 
-      {review.comment && (
-        <p className="mt-3 text-sm text-muted-foreground">{review.comment}</p>
-      )}
+      {review.comment && <p className="mt-3 text-sm text-muted-foreground">{review.comment}</p>}
 
       {review.status === Status.IGNORED ? (
         <p className="mt-4 text-xs text-muted-foreground">

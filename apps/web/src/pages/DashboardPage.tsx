@@ -3,9 +3,7 @@ function DashboardPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Gérez vos avis clients depuis votre espace Wafizo.
-        </p>
+        <p className="text-muted-foreground">Gérez vos avis clients depuis votre espace Wafizo.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -39,9 +37,7 @@ function DashboardPage() {
         </div>
 
         <div className="p-6">
-          <p className="text-sm text-muted-foreground">
-            Aucun avis à afficher pour le moment.
-          </p>
+          <p className="text-sm text-muted-foreground">Aucun avis à afficher pour le moment.</p>
         </div>
       </section>
     </div>
