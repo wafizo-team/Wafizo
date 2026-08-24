@@ -8,6 +8,7 @@ import type {
   NotificationPreferences,
   GenerateReplyRequest,
   PublishReplyResponse,
+  CollectLinkResponse,
 } from '@wafizo/shared';
 
 import { apiClient } from './client';
@@ -74,6 +75,13 @@ export function useConnectBusiness() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
+  });
+}
+// ⚠️ Route assumée par convention (/business/collect-link) — le contrat définit
+// CollectLinkResponse mais ne précise pas l'endpoint. À confirmer avec le back (W12/L2).
+export function useCollectLink() {
+  return useMutation({
+    mutationFn: () => apiClient.post<CollectLinkResponse>('/business/collect-link'),
   });
 }
 
