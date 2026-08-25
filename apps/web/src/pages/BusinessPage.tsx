@@ -20,7 +20,7 @@ function BusinessPage() {
   const [copied, setCopied] = useState(false);
 
   function handleCopy(url: string) {
-    navigator.clipboard.writeText(url).then(() => {
+    void navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -82,8 +82,8 @@ function BusinessPage() {
               <h2 className="font-semibold">Lien de collecte d'avis</h2>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Partagez ce lien ou ce QR code à vos clients pour qu'ils laissent facilement
-              un avis Google sur votre fiche.
+              Partagez ce lien ou ce QR code à vos clients pour qu'ils laissent facilement un avis
+              Google sur votre fiche.
             </p>
 
             {!collectLink.data ? (
@@ -103,9 +103,7 @@ function BusinessPage() {
                   dangerouslySetInnerHTML={{ __html: collectLink.data.qrCodeSvg }}
                 />
                 <div className="flex-1">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Lien public
-                  </label>
+                  <label className="text-xs font-medium text-muted-foreground">Lien public</label>
                   <div className="mt-1 flex items-center gap-2">
                     <input
                       type="text"
@@ -115,7 +113,7 @@ function BusinessPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => handleCopy(collectLink.data!.publicUrl)}
+                      onClick={() => handleCopy(collectLink.data.publicUrl)}
                       className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-muted"
                     >
                       {copied ? (

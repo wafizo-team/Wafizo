@@ -37,9 +37,7 @@ function DashboardPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Gérez vos avis clients depuis votre espace Wafizo.
-        </p>
+        <p className="text-muted-foreground">Gérez vos avis clients depuis votre espace Wafizo.</p>
       </div>
 
       {isError && (
@@ -84,9 +82,7 @@ function DashboardPage() {
         </div>
 
         <div className="divide-y">
-          {isLoading && (
-            <p className="p-6 text-sm text-muted-foreground">Chargement...</p>
-          )}
+          {isLoading && <p className="p-6 text-sm text-muted-foreground">Chargement...</p>}
 
           {!isLoading && latestReviews.length === 0 && (
             <p className="p-6 text-sm text-muted-foreground">
