@@ -1,0 +1,55 @@
+---
+# ─── Repo Helm ────────────────────────────────────────────────────────────────
+- name: Ajouter le repo Helm cert-manager
+  shell: helm repo add jetstack https://charts.jetstack.io
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Mettre à jour les repos Helm
+  shell: helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Installation cert-manager ────────────────────────────────────────────────
+- name: Installer cert-manager via Helm
+  shell: |
+    helm upgrade --install cert-manager jetstack/cert-manager \
+      --namespace cert-manager \
+      --create-namespace \
+      --set installCRDs=true \
+      --wait
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── ClusterIssuer Let's Encrypt ──────────────────────────────────────────────
+- name: Créer le ClusterIssuer Let's Encrypt production
+  shell: |
+    kubectl apply -f - <<EOF
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: letsencrypt-prod
+    spec:
+      acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        email: contact@wafizo.fr
+        privateKeySecretRef:
+          name: letsencrypt-prod
+        solvers:
+          - http01:
+              ingress:
+                class: traefik
+    EOF
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Vérification ─────────────────────────────────────────────────────────────
+- name: Vérifier que cert-manager est running
+  shell: kubectl get pods -n cert-manager
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: certmanager_status
+
+- name: Afficher le statut cert-manager
+  debug:
+    msg: "{{ certmanager_status.stdout }}"
