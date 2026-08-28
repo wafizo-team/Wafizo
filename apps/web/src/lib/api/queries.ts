@@ -94,3 +94,36 @@ export function useUpdateNotificationPreferences() {
     },
   });
 }
+
+export function useSubscription() {
+  return useQuery({
+    queryKey: ['subscription'],
+    queryFn: () =>
+      apiClient.get<{
+        plan: string;
+        status: string;
+        currentPeriodEnd: string | null;
+        cancelAtPeriodEnd: boolean;
+      }>('/billing/subscription'),
+  });
+}
+
+export function useCreateCheckout() {
+  return useMutation({
+    mutationFn: (priceId: string) =>
+      apiClient.post<{ checkoutUrl: string }>('/billing/checkout', { priceId }),
+  });
+}
+
+export function useBillingPortal() {
+  return useMutation({
+    mutationFn: () => apiClient.post<{ portalUrl: string }>('/billing/portal'),
+  });
+}
+
+export function useCollectLink() {
+  return useMutation({
+    mutationFn: () =>
+      apiClient.post<{ publicUrl: string; qrCodeSvg: string }>('/business/collect-link'),
+  });
+}
