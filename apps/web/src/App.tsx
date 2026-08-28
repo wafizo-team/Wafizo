@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-
 import RequireAuth from '@/components/auth/RequireAuth';
 import RequireBusinessConnected from '@/components/auth/RequireBusinessConnected';
 import AppLayout from '@/components/layout/AppLayout';
@@ -9,10 +8,11 @@ import BusinessPage from '@/pages/BusinessPage';
 import DashboardPage from '@/pages/DashboardPage';
 import LoginPage from '@/pages/LoginPage';
 import OnboardingPage from '@/pages/OnboardingPage';
+import PublicCollectPage from '@/pages/PublicCollectPage';
 import RepliesPage from '@/pages/RepliesPage';
 import ReviewsPage from '@/pages/ReviewsPage';
 import SettingsPage from '@/pages/SettingsPage';
-
+import SubscriptionPage from '@/pages/SubscriptionPage';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,7 +21,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,16 +28,16 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
-
+          <Route path="/public/collect/:slug" element={<PublicCollectPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/onboarding" element={<OnboardingPage />} />
-
             <Route element={<RequireBusinessConnected />}>
               <Route element={<AppLayout />}>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/reviews" element={<ReviewsPage />} />
                 <Route path="/replies" element={<RepliesPage />} />
                 <Route path="/business" element={<BusinessPage />} />
+                <Route path="/billing" element={<SubscriptionPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
             </Route>
@@ -48,5 +47,4 @@ function App() {
     </QueryClientProvider>
   );
 }
-
 export default App;

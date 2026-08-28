@@ -7,6 +7,7 @@ const navigation = [
   { label: 'Avis', href: '/reviews' },
   { label: 'Réponses', href: '/replies' },
   { label: 'Établissement', href: '/business' },
+  { label: 'Abonnement', href: '/billing' },
   { label: 'Paramètres', href: '/settings' },
 ];
 
