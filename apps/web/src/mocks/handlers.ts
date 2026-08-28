@@ -27,6 +27,8 @@ const reviews: Review[] = [...mockReviews];
 
 let businessConnectionStatus: BusinessConnectionStatus = BusinessConnectionStatus.CONNECTED;
 
+let currentPlan: Plan = Plan.FREE;
+
 let notificationPreferences: NotificationPreferences = {
   emailEnabled: true,
   smsEnabled: false,
@@ -144,6 +146,41 @@ export const handlers = [
       publicUrl,
       qrCodeSvg: fakeQrSvg(publicUrl),
     });
+  }),
+
+  http.get(`${API_URL}/billing/subscription`, ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
+    return HttpResponse.json({
+      plan: currentPlan,
+      status: SubscriptionStatus.ACTIVE,
+      currentPeriodEnd:
+        currentPlan === Plan.PRO ? '2026-09-25T00:00:00.000Z' : null,
+      cancelAtPeriodEnd: false,
+    });
+  }),
+
+  http.post(`${API_URL}/billing/checkout`, async ({ request }) => {
+    const authError = checkAuth(request);
+    if (authError) return authError;
+
+    currentPlan = Plan.PRO;
+    await delay(500);
+    return HttpResponse.json({ checkoutUrl: 'https://checkout.stripe.com/mock-session' });
+  }),
+
+  http.post(`${API_URL}/billing/portal`, async () => {
+    await delay(300);
+    return HttpResponse.json({ portalUrl: 'https://billing.stripe.com/mock-portal' });
+  }),
+
+  http.get(`${API_URL}/public/collect/:slug`, () => {
+    const response = {
+      businessName: 'Mon Commerce',
+      googleReviewUrl: 'https://g.page/r/mon-commerce/review',
+    };
+    return HttpResponse.json(response);
   }),
 
   http.get(`${API_URL}/me/notification-preferences`, ({ request }) => {
