@@ -1,0 +1,46 @@
+---
+# ─── Installation K3s ────────────────────────────────────────────────────────
+- name: Télécharger et installer K3s
+  shell: |
+    curl -sfL https://get.k3s.io | sh -s - \
+      --disable traefik \
+      --disable servicelb
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Attendre que K3s soit prêt
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    state: present
+    timeout: 60
+
+- name: Démarrer et activer K3s
+  service:
+    name: k3s
+    state: started
+    enabled: true
+
+# ─── Kubeconfig ───────────────────────────────────────────────────────────────
+- name: Créer le dossier .kube pour admin
+  file:
+    path: /home/admin/.kube
+    state: directory
+    owner: admin
+    group: admin
+    mode: "0755"
+
+- name: Copier le kubeconfig pour admin
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /home/admin/.kube/config
+    remote_src: yes
+    owner: admin
+    group: admin
+    mode: "0600"
+
+# ─── Helm ─────────────────────────────────────────────────────────────────────
+- name: Télécharger et installer Helm
+  shell: |
+    curl -sfL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
