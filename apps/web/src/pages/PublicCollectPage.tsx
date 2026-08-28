@@ -39,12 +39,10 @@ function PublicCollectPage() {
             </div>
             <h1 className="mt-4 text-xl font-bold">{data.businessName}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Votre avis compte beaucoup pour nous. Merci de prendre quelques secondes
-              pour laisser un avis sur notre fiche Google.
+              Votre avis compte beaucoup pour nous. Merci de prendre quelques secondes pour laisser
+              un avis sur notre fiche Google.
             </p>
             <a
-            
-
               href={data.googleReviewUrl}
               target="_blank"
               rel="noopener noreferrer"

@@ -3,7 +3,8 @@ import { Plan } from '@wafizo/shared';
 
 import { useSubscription, useCreateCheckout, useBillingPortal } from '@/lib/api/queries';
 
-const PRO_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID_PRO ?? 'price_placeholder_pro';
+const PRO_PRICE_ID =
+  (import.meta.env.VITE_STRIPE_PRICE_ID_PRO as string | undefined) ?? 'price_placeholder_pro';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', {
