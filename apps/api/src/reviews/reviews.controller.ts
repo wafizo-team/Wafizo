@@ -1,45 +1,33 @@
 import {
   Controller,
   Get,
-  Patch,
   Param,
-  Query,
+  Patch,
   Body,
-  Req,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
-import { GetReviewsQueryDto } from './dto/get-reviews-query.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-interface RequestWithUser {
-  user: {
-    id: string;
-  };
-}
-
-@UseGuards(JwtAuthGuard)
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Get()
-  findAll(@Req() req: RequestWithUser, @Query() query: GetReviewsQueryDto) {
-    return this.reviewsService.findAll(req.user.id, query);
+  findAll(@Query() query: Record<string, any>) {
+    return this.reviewsService.findAll(query);
   }
 
   @Get(':id')
-  findOne(@Req() req: RequestWithUser, @Param('id') id: string) {
-    return this.reviewsService.findOne(req.user.id, id);
+  findOne(@Param('id') id: string) {
+    return this.reviewsService.findOne(id);
   }
 
   @Patch(':id')
-  update(
-    @Req() req: RequestWithUser,
-    @Param('id') id: string,
-    @Body() dto: UpdateReviewDto,
-  ) {
-    return this.reviewsService.update(req.user.id, id, dto);
+  @UseGuards(JwtAuthGuard)
+  update(@Param('id') id: string, @Body() dto: UpdateReviewDto) {
+    return this.reviewsService.update(id, dto);
   }
 }
