@@ -22,14 +22,90 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 # ─── Prometheus ───────────────────────────────────────────────────────────────
-- name: Installer Prometheus via Helm
+- name: Créer la config Alertmanager
+  copy:
+    dest: /tmp/alertmanager-config.yml
+    content: |
+      global:
+        smtp_smarthost: 'smtp.gmail.com:587'
+        smtp_from: 'wafizo.support@gmail.com'
+        smtp_auth_username: 'wafizo.support@gmail.com'
+        smtp_auth_password: '{{ alertmanager_smtp_password }}'
+        smtp_require_tls: true
+
+      route:
+        group_by: ['alertname']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 12h
+        receiver: 'email'
+
+      receivers:
+        - name: 'email'
+          email_configs:
+            - to: 'wafizo.support@gmail.com'
+              send_resolved: true
+
+- name: Installer Prometheus + Alertmanager via Helm
   shell: |
     helm upgrade --install prometheus prometheus-community/prometheus \
       --namespace monitoring \
       --set server.retention=7d \
       --set server.persistentVolume.size=5Gi \
-      --set alertmanager.enabled=false \
+      --set alertmanager.enabled=true \
+      --set-file alertmanager.config=/tmp/alertmanager-config.yml \
       --wait
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Appliquer les règles d'alerte
+  shell: |
+    kubectl apply -f - <<EOF
+    apiVersion: monitoring.coreos.com/v1
+    kind: PrometheusRule
+    metadata:
+      name: wafizo-alerts
+      namespace: monitoring
+    spec:
+      groups:
+        - name: wafizo
+          rules:
+            - alert: InstanceDown
+              expr: up == 0
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Instance down"
+                description: "Un service est inaccessible depuis 2 minutes"
+
+            - alert: DiskSpaceCritical
+              expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Espace disque critique"
+                description: "Moins de 10% d'espace disque disponible"
+
+            - alert: MemoryCritical
+              expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "RAM critique"
+                description: "Moins de 10% de RAM disponible"
+
+            - alert: ApiDown
+              expr: probe_success{job="api-health"} == 0
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: "API Wafizo inaccessible"
+                description: "Le endpoint /health de l'API ne répond plus"
+    EOF
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
