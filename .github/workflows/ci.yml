@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: pnpm --filter @wafizo/api exec prisma generate
+        run: cd apps/api && npx prisma generate
 
       - name: Lint
         run: pnpm lint
