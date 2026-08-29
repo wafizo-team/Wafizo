@@ -1,0 +1,13 @@
+# Valeurs secrètes — NE JAMAIS committer
+terraform.tfvars
+
+# État Terraform — contient les IDs de ressources en clair
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Cache Terraform
+.terraform/
+
+# Plans binaires
+*.tfplan
