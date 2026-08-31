@@ -1,7 +1,6 @@
 import { PrismaClient, ReviewStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import * as bcrypt from 'bcrypt';
 import 'dotenv/config';
 
 const connectionString = process.env.DATABASE_URL;
@@ -18,7 +17,6 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Création d'un utilisateur de test
-  const hashedPassword = await bcrypt.hash('Password123!', 10);
   const user = await prisma.user.create({
     data: {
       email: 'owner@wafizo.com',
@@ -250,16 +248,16 @@ async function main() {
 
   // Insertion des avis reliés au business
   for (const review of reviewsData) {
-  await prisma.review.create({
-    data: {
-      rating: review.rating,
-      content: review.content,
-      authorName: review.authorName,
-      status: ReviewStatus.PENDING, // Utilisation d'un statut valide de l'enum
-      businessId: business.id,
-    },
-  });
-}
+    await prisma.review.create({
+      data: {
+        rating: review.rating,
+        content: review.content,
+        authorName: review.authorName,
+        status: ReviewStatus.PENDING, // Utilisation d'un statut valide de l'enum
+        businessId: business.id,
+      },
+    });
+  }
   console.log(`✅ Seeding finished. Inserted ${reviewsData.length} reviews.`);
 }
 
