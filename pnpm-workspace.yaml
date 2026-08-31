@@ -3,5 +3,9 @@ packages:
   - 'packages/*'
 allowBuilds:
   '@prisma/engines': false
-  prisma: false
+  '@swc/core': false
+  bcrypt: true
+  msgpackr-extract: false
+  msw: false
+  prisma: true
   unrs-resolver: false
