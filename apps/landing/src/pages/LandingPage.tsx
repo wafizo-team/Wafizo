@@ -2,34 +2,24 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ReceiptCard from '../components/ReceiptCard';
 
-const STORAGE_KEY = 'wafizo_landing_emails';
-
 function LandingPage() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
     const trimmedEmail = email.trim().toLowerCase();
 
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const emails: string[] = raw ? (JSON.parse(raw) as string[]) : [];
-
-      if (emails.includes(trimmedEmail)) {
-        setSubmitted(true);
-        return;
-      }
-
-      emails.push(trimmedEmail);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(emails));
-      setSubmitted(true);
-    } catch {
-      setError('Une erreur est survenue, réessayez.');
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      e.preventDefault();
+      setError('Merci de renseigner un email valide.');
+      return;
     }
+
+    setError(null);
+    setSubmitted(true);
+    // Pas de preventDefault ici : le formulaire continue sa soumission
+    // native vers Brevo, dans l'iframe caché ci-dessous.
   };
 
   return (
@@ -38,7 +28,8 @@ function LandingPage() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         {' '}
         <span className="font-['Bricolage_Grotesque'] text-xl font-extrabold">Wafizo </span>
-        <a
+        
+          <a
           href="#cta"
           className="rounded-full bg-[#16213E] px-4 py-2 font-['Inter'] text-sm font-medium text-white transition hover:bg-[#16213E]/90"
         >
@@ -60,17 +51,25 @@ function LandingPage() {
 
           <form
             id="cta"
+            action="https://e47c1eca.sibforms.com/serve/MUIFANQA1zZugUxlUN5fYFfcHQTwH6LXOwS-SHPM-FtUOhBJRKaMzeSKlyFEVa6XHQyP46zOY0CyZxJOoqLNCAQMBZhnGkJqFnYS6cuDmOQC7vcX3bA4k_Rbj1lAmicul9Bx0n0rU0gNUFw0m8qZqK-YSFfx7Lo68YvvR6qNGYiJpHCBj7Y7Aze0Yb0RYwY3Y8SgeVkf2nDqcAXXJw=="
+            method="POST"
+            target="hidden_iframe"
             onSubmit={handleSubmit}
             className="mt-8 flex max-w-md flex-col gap-2 sm:flex-row"
           >
             <input
               type="email"
+              name="EMAIL"
               required
               placeholder="vous@commerce.fr"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="min-w-0 flex-1 rounded-full border border-[#16213E]/15 bg-white px-4 py-3 font-['Inter'] text-sm outline-none transition focus:border-[#E0A63A] focus:ring-2 focus:ring-[#E0A63A]/30"
             />
+
+            {/* Champs cachés requis par Brevo */}
+            <input type="text" name="email_address_check" value="" readOnly className="hidden" />
+            <input type="hidden" name="locale" value="fr" />
 
             <button
               type="submit"
@@ -84,7 +83,12 @@ function LandingPage() {
             Aucun spam. Un email au lancement, c'est tout.
           </p>
 
-          {error && <p className="mt-2 font-['Inter'] text-xs text-red-600">{error}</p>}
+          {error && (
+            <p className="mt-2 font-['Inter'] text-xs text-red-600">{error}</p>
+          )}
+
+          {/* iframe cible cachée : la soumission Brevo se fait ici, la page ne recharge jamais */}
+          <iframe name="hidden_iframe" style={{ display: 'none' }} title="brevo-submit" />
         </div>
 
         <ReceiptCard />
