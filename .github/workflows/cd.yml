@@ -75,8 +75,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - name: Vérifier que le serveur est configuré
+        id: check_server
+        run: |
+          if [ -z "${{ secrets.INSTANCE_IP }}" ]; then
+            echo "INSTANCE_IP non configuré — déploiement ignoré"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
       - name: Déployer sur K3s via SSH
+        if: steps.check_server.outputs.skip == 'false'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.INSTANCE_IP }}
