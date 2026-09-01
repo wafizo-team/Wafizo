@@ -21,13 +21,17 @@ import { mockReviews } from '@/lib/fixtures/reviews';
 
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333';
 
+// Passe à true quand tu attaques W2 (client API + refresh token) pour simuler
+// les 401 (UNAUTHENTICATED / TOKEN_EXPIRED) sur les routes protégées.
+// Reste à false pour continuer à dev les pages sans se soucier de l'auth.
 const SIMULATE_AUTH = false;
 
+// État en mémoire, mutable pendant la session de dev (persiste entre les requêtes, pas entre les reloads)
 const reviews: Review[] = [...mockReviews];
 
+// Pour tester W6 : mets 'NOT_CONNECTED' ici pour voir l'onboarding au chargement,
+// ou 'CONNECTED' pour voir le dashboard directement.
 let businessConnectionStatus: BusinessConnectionStatus = BusinessConnectionStatus.CONNECTED;
-
-let currentPlan: Plan = Plan.FREE;
 
 let notificationPreferences: NotificationPreferences = {
   emailEnabled: true,
@@ -36,7 +40,7 @@ let notificationPreferences: NotificationPreferences = {
   minRatingAlert: 3,
 };
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -50,6 +54,10 @@ function apiError(
   return HttpResponse.json(body, { status: statusCode });
 }
 
+// À activer avec SIMULATE_AUTH. Convention de test :
+//   Authorization absent           -> 401 UNAUTHENTICATED
+//   Authorization: Bearer expired  -> 401 TOKEN_EXPIRED
+//   tout le reste                  -> ok
 function checkAuth(request: Request) {
   if (!SIMULATE_AUTH) return null;
 
@@ -63,30 +71,18 @@ function checkAuth(request: Request) {
   return null;
 }
 
-function fakeQrSvg(seed: string): string {
-  const size = 10;
-  const cells: string[] = [];
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  }
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      hash = (hash * 1103515245 + 12345) >>> 0;
-      if (hash % 2 === 0) {
-        cells.push(`<rect x="${x * 10}" y="${y * 10}" width="10" height="10" fill="black" />`);
-      }
-    }
-  }
-  return `<svg viewBox="0 0 ${size * 10} ${size * 10}" xmlns="http://www.w3.org/2000/svg">${cells.join('')}</svg>`;
-}
-
 export const handlers = [
+  // GET /health
   http.get(`${API_URL}/health`, () => {
     const response: HealthResponse = { status: 'ok', timestamp: new Date().toISOString() };
     return HttpResponse.json(response);
   }),
 
+  // POST /auth/refresh
+  // Aligné sur client.ts qui envoie { refreshToken } dans le body (et non un header).
+  // ⚠️ Choix à valider avec le back : un refresh token lisible en JS (localStorage + body)
+  // est moins sûr qu'un cookie httpOnly envoyé automatiquement par le navigateur.
+  // Convention de test (avec SIMULATE_AUTH = true) : refreshToken === 'invalid-refresh' -> 401 REFRESH_INVALID
   http.post(`${API_URL}/auth/refresh`, async ({ request }) => {
     const body = (await request.json().catch(() => ({}))) as { refreshToken?: string };
 
@@ -98,6 +94,7 @@ export const handlers = [
     return HttpResponse.json({ accessToken: 'mock-access-token', expiresIn: 3600 });
   }),
 
+  // GET /auth/me — simule une session déjà connectée, pour débloquer W5/W6 sans OAuth réel
   http.get(`${API_URL}/auth/me`, ({ request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
@@ -133,67 +130,30 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
+  // POST /business/connect-google — simule la connexion de la fiche (W6)
+  // ⚠️ Endpoint absent de packages/shared/dto.ts — à faire ajouter au contrat par le back
+  // (ou vérifier qu'il existe sous un autre nom) avant de considérer W6 "prêt".
   http.post(`${API_URL}/business/connect-google`, async () => {
     await delay(700);
     businessConnectionStatus = BusinessConnectionStatus.CONNECTED;
     return HttpResponse.json({ connectionStatus: businessConnectionStatus });
   }),
 
-  http.post(`${API_URL}/business/collect-link`, async () => {
-    await delay(400);
-    const publicUrl = 'https://wafizo.fr/c/mon-commerce';
-    return HttpResponse.json({
-      publicUrl,
-      qrCodeSvg: fakeQrSvg(publicUrl),
-    });
-  }),
-
-  http.get(`${API_URL}/billing/subscription`, ({ request }) => {
-    const authError = checkAuth(request);
-    if (authError) return authError;
-
-    return HttpResponse.json({
-      plan: currentPlan,
-      status: SubscriptionStatus.ACTIVE,
-      currentPeriodEnd: currentPlan === Plan.PRO ? '2026-09-25T00:00:00.000Z' : null,
-      cancelAtPeriodEnd: false,
-    });
-  }),
-
-  http.post(`${API_URL}/billing/checkout`, async ({ request }) => {
-    const authError = checkAuth(request);
-    if (authError) return authError;
-
-    currentPlan = Plan.PRO;
-    await delay(500);
-    return HttpResponse.json({ checkoutUrl: 'https://checkout.stripe.com/mock-session' });
-  }),
-
-  http.post(`${API_URL}/billing/portal`, async () => {
-    await delay(300);
-    return HttpResponse.json({ portalUrl: 'https://billing.stripe.com/mock-portal' });
-  }),
-
-  http.get(`${API_URL}/public/collect/:slug`, () => {
-    const response = {
-      businessName: 'Mon Commerce',
-      googleReviewUrl: 'https://g.page/r/mon-commerce/review',
-    };
-    return HttpResponse.json(response);
-  }),
-
+  // GET /me/notification-preferences (B13/W13)
   http.get(`${API_URL}/me/notification-preferences`, ({ request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
     return HttpResponse.json(notificationPreferences);
   }),
 
+  // PUT /me/notification-preferences (B13/W13)
   http.put(`${API_URL}/me/notification-preferences`, async ({ request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
 
     const body = (await request.json()) as NotificationPreferences;
 
+    // Validation E.164 basique, cohérente avec le contrat (B13)
     if (body.smsEnabled && body.phoneNumber && !/^\+[1-9]\d{1,14}$/.test(body.phoneNumber)) {
       return apiError(400, ApiErrorCode.VALIDATION_ERROR, 'Numéro de téléphone invalide', [
         { field: 'phoneNumber', message: 'Format E.164 attendu, ex: +33612345678' },
@@ -205,6 +165,7 @@ export const handlers = [
     return HttpResponse.json(notificationPreferences);
   }),
 
+  // GET /reviews — pagination + filtres (status, rating, hasReply, search) + tri, conformes au contrat
   http.get(`${API_URL}/reviews`, ({ request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
@@ -266,6 +227,7 @@ export const handlers = [
     });
   }),
 
+  // GET /reviews/:id
   http.get(`${API_URL}/reviews/:id`, ({ params, request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
@@ -277,6 +239,7 @@ export const handlers = [
     return HttpResponse.json(review);
   }),
 
+  // PATCH /reviews/:id — statut NEW/IGNORED uniquement (contrat : UpdateReviewRequest)
   http.patch(`${API_URL}/reviews/:id`, async ({ params, request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
@@ -292,6 +255,10 @@ export const handlers = [
     return HttpResponse.json(reviews[index]);
   }),
 
+  // POST /reviews/:id/reply/generate
+  // ⚠️ Le contrat définit GenerateReplyRequest mais pas de type de réponse dédié.
+  // On renvoie { content: string } par choix — à confirmer avec l'équipe / ajouter au contrat
+  // pour que W2 sache exactement à quoi s'attendre.
   http.post(`${API_URL}/reviews/:id/reply/generate`, async ({ request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;
@@ -307,6 +274,7 @@ export const handlers = [
     });
   }),
 
+  // POST /reviews/:id/reply/publish
   http.post(`${API_URL}/reviews/:id/reply/publish`, async ({ params, request }) => {
     const authError = checkAuth(request);
     if (authError) return authError;

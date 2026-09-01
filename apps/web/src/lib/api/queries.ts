@@ -8,10 +8,6 @@ import type {
   NotificationPreferences,
   GenerateReplyRequest,
   PublishReplyResponse,
-  CollectLinkResponse,
-  Subscription,
-  CheckoutResponse,
-  PortalResponse,
 } from '@wafizo/shared';
 
 import { apiClient } from './client';
@@ -40,6 +36,7 @@ export function useReviews(query: ListReviewsQuery) {
   });
 }
 
+// Remplace lib/mock/replyApi.ts::generateReply — vrai appel API (MSW en dev)
 export function useGenerateReply() {
   return useMutation({
     mutationFn: ({ reviewId, ...body }: { reviewId: string } & GenerateReplyRequest) =>
@@ -47,6 +44,8 @@ export function useGenerateReply() {
   });
 }
 
+// Remplace lib/mock/replyApi.ts::publishReply — vrai appel API (MSW en dev),
+// invalide le cache 'reviews' pour que la réponse publiée persiste après un refetch
 export function usePublishReply() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -78,35 +77,6 @@ export function useConnectBusiness() {
   });
 }
 
-// ⚠️ Route assumée par convention (/business/collect-link) — le contrat définit
-// CollectLinkResponse mais ne précise pas l'endpoint. À confirmer avec le back (W12/L2).
-export function useCollectLink() {
-  return useMutation({
-    mutationFn: () => apiClient.post<CollectLinkResponse>('/business/collect-link'),
-  });
-}
-
-// Aligné sur apps/api/src/billing/billing.controller.ts (routes réelles, pas assumées)
-export function useSubscription() {
-  return useQuery({
-    queryKey: ['subscription'],
-    queryFn: () => apiClient.get<Subscription>('/billing/subscription'),
-  });
-}
-
-export function useCreateCheckout() {
-  return useMutation({
-    mutationFn: (priceId: string) =>
-      apiClient.post<CheckoutResponse>('/billing/checkout', { priceId }),
-  });
-}
-
-export function useBillingPortal() {
-  return useMutation({
-    mutationFn: () => apiClient.post<PortalResponse>('/billing/portal'),
-  });
-}
-
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: ['notification-preferences'],
@@ -122,5 +92,38 @@ export function useUpdateNotificationPreferences() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
     },
+  });
+}
+
+export function useSubscription() {
+  return useQuery({
+    queryKey: ['subscription'],
+    queryFn: () =>
+      apiClient.get<{
+        plan: string;
+        status: string;
+        currentPeriodEnd: string | null;
+        cancelAtPeriodEnd: boolean;
+      }>('/billing/subscription'),
+  });
+}
+
+export function useCreateCheckout() {
+  return useMutation({
+    mutationFn: (priceId: string) =>
+      apiClient.post<{ checkoutUrl: string }>('/billing/checkout', { priceId }),
+  });
+}
+
+export function useBillingPortal() {
+  return useMutation({
+    mutationFn: () => apiClient.post<{ portalUrl: string }>('/billing/portal'),
+  });
+}
+
+export function useCollectLink() {
+  return useMutation({
+    mutationFn: () =>
+      apiClient.post<{ publicUrl: string; qrCodeSvg: string }>('/business/collect-link'),
   });
 }
