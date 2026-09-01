@@ -15,11 +15,8 @@ RUN pnpm --filter @wafizo/landing build
 
 # ─── Production ───────────────────────────────────────────────────────────────
 FROM nginx:alpine AS production
-
+RUN apk update && apk upgrade --no-cache
 COPY --from=builder /app/apps/landing/dist /usr/share/nginx/html
-
 COPY apps/landing/nginx.conf /etc/nginx/conf.d/default.conf
-
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]
