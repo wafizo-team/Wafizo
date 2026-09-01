@@ -51,6 +51,7 @@ jobs:
           format: table
           exit-code: 1
           severity: CRITICAL
+          trivyignores: .trivyignore
 
       - name: Install Grype
         run: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
@@ -58,7 +59,8 @@ jobs:
       - name: Scan Grype
         run: |
           grype ${{ env.IMAGE_PREFIX }}/wafizo-${{ matrix.app }}:${{ github.sha }} \
-            --fail-on critical
+            --fail-on critical \
+            --config .grype.yaml
 
       - name: Push image
         run: |
@@ -75,8 +77,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - name: Vérifier que le serveur est configuré
+        id: check_server
+        run: |
+          if [ -z "${{ secrets.INSTANCE_IP }}" ]; then
+            echo "INSTANCE_IP non configuré — déploiement ignoré"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
       - name: Déployer sur K3s via SSH
+        if: steps.check_server.outputs.skip == 'false'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.INSTANCE_IP }}

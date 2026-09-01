@@ -1,6 +1,9 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+onlyBuiltDependencies:
+  - esbuild
 allowBuilds:
   '@prisma/engines': false
   '@swc/core': false
@@ -9,3 +12,5 @@ allowBuilds:
   msw: false
   prisma: true
   unrs-resolver: false
+overrides:
+  tar: '>=7.5.19'
