@@ -1,0 +1,40 @@
+ignore:
+  # CVE dans l'outillage de build présent dans l'image de base node:22-alpine
+  # (npm, pnpm et leurs dépendances) — non exploitables au runtime de l'API.
+  - vulnerability: CVE-2026-59873
+  - package:
+      name: tar
+      type: npm
+  - package:
+      name: pnpm
+      type: npm
+  - package:
+      name: glob
+      type: npm
+  - package:
+      name: minimatch
+      type: npm
+  - package:
+      name: brace-expansion
+      type: npm
+  - package:
+      name: pacote
+      type: npm
+  - package:
+      name: sigstore
+      type: npm
+  - package:
+      name: "@sigstore/core"
+      type: npm
+  - package:
+      name: deepmerge-ts
+      type: npm
+  - package:
+      name: picomatch
+      type: npm
+  - package:
+      name: ip-address
+      type: npm
+  - package:
+      name: js-yaml
+      type: npm

@@ -1,8 +1,7 @@
-/* eslint-disable no-console */
-import 'dotenv/config';
 import { PrismaClient, ReviewStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import 'dotenv/config';
 
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
@@ -10,94 +9,263 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Nettoyage de la base de données...');
-  await prisma.reply.deleteMany();
+  console.log('🌱 Starting database seeding...');
+
+  // Nettoyage basique (optionnel selon vos besoins)
   await prisma.review.deleteMany();
-  await prisma.source.deleteMany();
   await prisma.business.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log('👤 Création d’un utilisateur de test...');
+  // Création d'un utilisateur de test
   const user = await prisma.user.create({
     data: {
-      email: 'commercant@wafizo.fr',
-      name: 'Boulangerie Louise',
-      googleId: 'google-mock-id-12345',
+      email: 'owner@wafizo.com',
+      name: 'Wafa Owner',
     },
   });
 
-  console.log('🏪 Création d’une fiche commerce...');
+  // Création d'un business de test
   const business = await prisma.business.create({
     data: {
-      name: 'Boulangerie Louise - Paris 11',
-      slug: 'boulangerie-louise-paris-11',
+      name: 'Wafizo Bistro',
+      slug: 'wafizo-bistro', // <-- Ajoutez cette ligne ici
       userId: user.id,
     },
   });
-
-  console.log('🔗 Création d’une source Google...');
-  await prisma.source.create({
-    data: {
-      type: 'GOOGLE',
-      externalId: 'place-id-mock-67890',
-      businessId: business.id,
-    },
-  });
-
-  console.log('⭐ Création des avis de test...');
-  const mockReviews = [
+  // Liste de ~30 avis mockés
+  const reviewsData = [
     {
-      authorName: 'Sophie Martin',
       rating: 5,
-      content:
-        'Excellentes baguettes tradition et accueil toujours très chaleureux !',
-      status: ReviewStatus.PUBLISHED,
-      businessId: business.id,
+      content: 'Service incroyable, personnel très accueillant !',
+      authorName: 'Alice Martin',
+      status: 'replied',
+      sentiment: 'positive',
     },
     {
-      authorName: 'Thomas Dubois',
       rating: 1,
-      content: 'Viennoiseries pas fraîches ce matin et service trop lent.',
-      status: ReviewStatus.PENDING,
-      businessId: business.id,
+      content: 'Attente interminable et plat froid. Très déçu.',
+      authorName: 'Marc Durand',
+      status: 'pending',
+      sentiment: 'negative',
     },
     {
-      authorName: 'Claire Bernard',
       rating: 4,
-      content:
-        'Très bons gâteaux, dommage qu’il y ait souvent la queue à midi.',
-      status: ReviewStatus.PENDING,
-      businessId: business.id,
+      content: 'Très bon rapport qualité-prix, je recommande.',
+      authorName: 'Sophie Bernard',
+      status: 'replied',
+      sentiment: 'positive',
     },
     {
-      authorName: 'Lucas Petit',
+      rating: 3,
+      content: "Correct, sans plus. Peut mieux faire sur l'accueil.",
+      authorName: 'Thomas Petit',
+      status: 'pending',
+      sentiment: 'neutral',
+    },
+    {
       rating: 5,
-      content: 'Le meilleur pain au chocolat du quartier, sans hésitation !',
-      status: ReviewStatus.PUBLISHED,
-      businessId: business.id,
+      content: 'Une magnifique découverte, tout était parfait !',
+      authorName: 'Julie Leroy',
+      status: 'replied',
+      sentiment: 'positive',
     },
     {
-      authorName: 'Amélie Roux',
       rating: 2,
-      content: 'Erreur dans ma commande et vendeuse désagréable.',
-      status: ReviewStatus.PENDING,
-      businessId: business.id,
+      content: 'Bruyant et service trop lent un samedi soir.',
+      authorName: 'David Moreau',
+      status: 'pending',
+      sentiment: 'negative',
+    },
+    {
+      rating: 5,
+      content: 'Le meilleur de la ville, foncez les yeux fermés.',
+      authorName: 'Emma Simon',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 4,
+      content: 'Très propre et rapide. Rien à dire.',
+      authorName: 'Lucas Laurent',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 1,
+      content: 'Erreur dans la commande et aucun geste commercial.',
+      authorName: 'Chloé Michel',
+      status: 'pending',
+      sentiment: 'negative',
+    },
+    {
+      rating: 3,
+      content: "Un peu cher pour la quantité, mais c'est bon.",
+      authorName: 'Hugo Garcia',
+      status: 'pending',
+      sentiment: 'neutral',
+    },
+    {
+      rating: 5,
+      content: 'Personnel au top et ambiance chaleureuse.',
+      authorName: 'Manon David',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 4,
+      content: "Très bien situé, facile d'accès.",
+      authorName: 'Nathan Bertrand',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 2,
+      content: "La qualité a baissé par rapport à l'année dernière.",
+      authorName: 'Camille Roux',
+      status: 'pending',
+      sentiment: 'negative',
+    },
+    {
+      rating: 5,
+      content: 'Exceptionnel ! Bravo à toute l’équipe.',
+      authorName: 'Louis Vincent',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 3,
+      content: 'Correct mais un peu bruyant.',
+      authorName: 'Zoé Fourcade',
+      status: 'pending',
+      sentiment: 'neutral',
+    },
+    {
+      rating: 4,
+      content: 'Service rapide même en heure de pointe.',
+      authorName: 'Gabriel Lefebvre',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 1,
+      content: 'Fuyez, mauvaise expérience du début à la fin.',
+      authorName: 'Sarah Mercier',
+      status: 'pending',
+      sentiment: 'negative',
+    },
+    {
+      rating: 5,
+      content: 'Superbe décoration et plats succulents.',
+      authorName: 'Jules Bonnet',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 4,
+      content: 'Très bon accueil, je reviendrai.',
+      authorName: 'Léa Dupont',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 3,
+      content: 'Moyen, j’attendais un peu mieux.',
+      authorName: 'Antoine Lambert',
+      status: 'pending',
+      sentiment: 'neutral',
+    },
+    {
+      rating: 5,
+      content: 'Rien à redire, tout est parfait.',
+      authorName: 'Inès Faure',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 2,
+      content: 'Déçu par la fraîcheur des produits.',
+      authorName: 'Mathis Girard',
+      status: 'pending',
+      sentiment: 'negative',
+    },
+    {
+      rating: 5,
+      content: 'Une vraie réussite, bravo !',
+      authorName: 'Clara Clement',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 4,
+      content: 'Très satisfaite de ma visite.',
+      authorName: 'Sarah Renard',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 3,
+      content: 'Passable, personnel distant.',
+      authorName: 'Paul Chevalier',
+      status: 'pending',
+      sentiment: 'neutral',
+    },
+    {
+      rating: 5,
+      content: 'Absolument parfait, merci pour tout !',
+      authorName: 'Rose Gauthier',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 1,
+      content: 'Inadmissible, commande jamais reçue.',
+      authorName: 'Tom Perrot',
+      status: 'pending',
+      sentiment: 'negative',
+    },
+    {
+      rating: 4,
+      content: 'Très bien, belle surprise.',
+      authorName: 'Louise Lemaire',
+      status: 'replied',
+      sentiment: 'positive',
+    },
+    {
+      rating: 3,
+      content: 'Correct sans plus.',
+      authorName: 'Arthur Masson',
+      status: 'pending',
+      sentiment: 'neutral',
+    },
+    {
+      rating: 5,
+      content: 'Je recommande vivement cet endroit !',
+      authorName: 'Alice Marchand',
+      status: 'replied',
+      sentiment: 'positive',
     },
   ];
 
-  for (const reviewData of mockReviews) {
-    await prisma.review.create({ data: reviewData });
+  // Insertion des avis reliés au business
+  for (const review of reviewsData) {
+    await prisma.review.create({
+      data: {
+        rating: review.rating,
+        content: review.content,
+        authorName: review.authorName,
+        status: ReviewStatus.PENDING, // Utilisation d'un statut valide de l'enum
+        businessId: business.id,
+      },
+    });
   }
-
-  console.log('✅ Seeding terminé avec succès !');
+  console.log(`✅ Seeding finished. Inserted ${reviewsData.length} reviews.`);
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Erreur lors du seed :', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });
