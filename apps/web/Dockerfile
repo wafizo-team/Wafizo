@@ -7,7 +7,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/web/package.json ./apps/web/
 
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile
 
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web

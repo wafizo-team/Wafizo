@@ -6,12 +6,12 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/landing/package.json ./apps/landing/
 
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile
 
 COPY apps/landing ./apps/landing
 COPY tsconfig.base.json ./
 
-RUN pnpm --filter landing build
+RUN pnpm --filter @wafizo/landing build
 
 # ─── Production ───────────────────────────────────────────────────────────────
 FROM nginx:alpine AS production
