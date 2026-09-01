@@ -51,6 +51,7 @@ jobs:
           format: table
           exit-code: 1
           severity: CRITICAL
+          trivyignores: .trivyignore
 
       - name: Install Grype
         run: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
@@ -58,7 +59,8 @@ jobs:
       - name: Scan Grype
         run: |
           grype ${{ env.IMAGE_PREFIX }}/wafizo-${{ matrix.app }}:${{ github.sha }} \
-            --fail-on critical
+            --fail-on critical \
+            --config .grype.yaml
 
       - name: Push image
         run: |
