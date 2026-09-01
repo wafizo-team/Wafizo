@@ -19,6 +19,7 @@ RUN pnpm --filter web build
 # ─── Production ───────────────────────────────────────────────────────────────
 FROM nginx:alpine AS production
 
+RUN apk update && apk upgrade --no-cache
 # Copie du build Vite vers le dossier servi par nginx
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
 

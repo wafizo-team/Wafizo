@@ -13,6 +13,7 @@ RUN pnpm --filter @wafizo/api build
 
 # ─── Production ───────────────────────────────────────────────────────────────
 FROM node:22-alpine AS production
+RUN apk update && apk upgrade --no-cache
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
