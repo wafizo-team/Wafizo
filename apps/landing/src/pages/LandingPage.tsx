@@ -28,8 +28,7 @@ function LandingPage() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         {' '}
         <span className="font-['Bricolage_Grotesque'] text-xl font-extrabold">Wafizo </span>
-        
-          <a
+        <a
           href="#cta"
           className="rounded-full bg-[#16213E] px-4 py-2 font-['Inter'] text-sm font-medium text-white transition hover:bg-[#16213E]/90"
         >
@@ -83,9 +82,7 @@ function LandingPage() {
             Aucun spam. Un email au lancement, c'est tout.
           </p>
 
-          {error && (
-            <p className="mt-2 font-['Inter'] text-xs text-red-600">{error}</p>
-          )}
+          {error && <p className="mt-2 font-['Inter'] text-xs text-red-600">{error}</p>}
 
           {/* iframe cible cachée : la soumission Brevo se fait ici, la page ne recharge jamais */}
           <iframe name="hidden_iframe" style={{ display: 'none' }} title="brevo-submit" />
