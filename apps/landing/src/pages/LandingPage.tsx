@@ -28,7 +28,7 @@ function LandingPage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(emails));
       setSubmitted(true);
     } catch {
-      setError("Une erreur est survenue, réessayez.");
+      setError('Une erreur est survenue, réessayez.');
     }
   };
 
@@ -84,9 +84,7 @@ function LandingPage() {
             Aucun spam. Un email au lancement, c'est tout.
           </p>
 
-          {error && (
-            <p className="mt-2 font-['Inter'] text-xs text-red-600">{error}</p>
-          )}
+          {error && <p className="mt-2 font-['Inter'] text-xs text-red-600">{error}</p>}
         </div>
 
         <ReceiptCard />

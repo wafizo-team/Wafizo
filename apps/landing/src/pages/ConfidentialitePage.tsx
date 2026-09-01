@@ -33,7 +33,8 @@ function ConfidentialitePage() {
             </h2>
             <p className="mt-2">
               Votre adresse email est utilisée exclusivement pour vous informer du lancement du
-              produit Wafizo. Elle ne sera ni cédée ni transmise à des tiers à des fins commerciales.
+              produit Wafizo. Elle ne sera ni cédée ni transmise à des tiers à des fins
+              commerciales.
             </p>
           </section>
 
