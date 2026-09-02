@@ -1,29 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
-
-  async validateGoogleUser(details: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    picture?: string;
-  }) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: details.email },
-    });
-
-    if (existingUser) {
-      return existingUser;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  googleLogin(req: any) {
+    if (!req.user) {
+      return { message: 'No user from Google' };
     }
-
-    return this.prisma.user.create({
-      data: {
-        email: details.email,
-        name: `${details.firstName} ${details.lastName}`,
-      },
-    });
+    return {
+      message: 'User info from Google',
+      user: req.user,
+    };
   }
 }
