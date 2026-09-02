@@ -10,6 +10,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      passport-google-oauth20:
+        specifier: ^2.0.0
+        version: 2.0.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.0.0
