@@ -23,4 +23,4 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY apps/api/prisma ./apps/api/prisma
 RUN pnpm --filter @wafizo/api exec prisma generate
 EXPOSE 3000
-CMD ["node", "apps/api/dist/main.js"]
+CMD ["node", "apps/api/dist/src/main.js"]
