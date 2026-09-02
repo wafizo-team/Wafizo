@@ -21,6 +21,6 @@ COPY apps/api/package.json ./apps/api/
 RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile --prod
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY apps/api/prisma ./apps/api/prisma
-RUN cd apps/api && pnpm exec prisma generate
+RUN pnpm --filter @wafizo/api exec prisma generate
 EXPOSE 3000
-CMD ["node", "apps/api/dist/main.js"]
+CMD ["node", "apps/api/dist/src/main.js"]
