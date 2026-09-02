@@ -1,7 +1,6 @@
-import { Controller, Get, Req, UseGuards, Res } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import type { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -9,17 +8,14 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req: any) {}
+  googleAuth() {
+    // Initiates Google OAuth flow
+  }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
-    const user = req.user;
-    
-    // Vous pouvez générer votre JWT ici ou renvoyer l'utilisateur directement
-    return res.json({
-      message: 'Connexion Google réussie !',
-      user,
-    });
+  googleAuthRedirect(@Req() req: any): unknown {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    return this.authService.googleLogin(req);
   }
 }
