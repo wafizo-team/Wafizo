@@ -1,39 +1,25 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { Public } from './decorators/public.decorator';
-
-interface RequestWithUser {
-  user: {
-    id: string;
-    email: string;
-  };
-}
+import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  googleAuth() {}
+  async googleAuth(@Req() req: any) {}
 
-  @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: RequestWithUser) {
-    return this.authService.generateTokens(req.user);
-  }
-
-  @Get('me')
-  getProfile(@Req() req: RequestWithUser) {
-    return req.user;
-  }
-
-  @Public()
-  @Post('refresh')
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshTokens(refreshToken);
+  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
+    const user = req.user;
+    
+    // Vous pouvez générer votre JWT ici ou renvoyer l'utilisateur directement
+    return res.json({
+      message: 'Connexion Google réussie !',
+      user,
+    });
   }
 }
