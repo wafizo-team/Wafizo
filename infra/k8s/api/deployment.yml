@@ -56,6 +56,26 @@ spec:
                 secretKeyRef:
                   name: wafizo-secrets
                   key: BREVO_API_KEY
+            - name: GOOGLE_CALLBACK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: wafizo-secrets
+                  key: GOOGLE_CALLBACK_URL
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: wafizo-secrets
+                  key: JWT_REFRESH_SECRET
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: wafizo-secrets
+                  key: GEMINI_API_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: wafizo-secrets
+                  key: STRIPE_WEBHOOK_SECRET
           livenessProbe:
             httpGet:
               path: /health
