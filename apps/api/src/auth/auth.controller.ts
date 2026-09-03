@@ -20,6 +20,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.googleLogin(req);
-    return res.redirect(`https://app.wafizo.fr?accessToken=${result.accessToken}`);
+    return res.redirect(
+      `https://app.wafizo.fr?accessToken=${result.accessToken}`,
+    );
   }
 }
