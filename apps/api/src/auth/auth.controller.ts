@@ -1,20 +1,25 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import type { Request } from 'express';
+import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
+  @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  googleAuth() {
-    // Initiates Google OAuth flow
+  async googleAuth(): Promise<void> {
+    // Initiates the Google OAuth flow
   }
 
+  @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req: any): unknown {
-    return this.authService.googleLogin(req);
+  googleAuthRedirect(@Req() req: Request) {
+    const user = (req as Request & { user: unknown }).user;
+    return {
+      message: 'Connexion Google réussie !',
+      user,
+    };
   }
 }
