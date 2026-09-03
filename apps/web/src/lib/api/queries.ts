@@ -74,8 +74,8 @@ export function useUpdateReviewStatus() {
 }
 
 export function useConnectBusiness() {
-  return useMutation({
-    mutationFn: (data: any = {}) => apiClient.post('/business/connect', data),
+  return useMutation<unknown, Error, void>({
+    mutationFn: () => apiClient.post('/business/connect', {}),
   });
 }
 
