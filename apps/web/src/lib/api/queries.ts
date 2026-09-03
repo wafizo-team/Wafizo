@@ -1,17 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
-  MeResponse,
-  Paginated,
-  Review,
-  ListReviewsQuery,
-  ReviewStatus,
-  NotificationPreferences,
-  GenerateReplyRequest,
-  PublishReplyResponse,
   SubscriptionResponse,
-  CheckoutRequest,
   CheckoutResponse,
   BillingPortalResponse,
+  Review,
+  ReviewStatus,
 } from '@wafizo/shared';
 
 import { apiClient } from './client';
@@ -19,45 +12,53 @@ import { apiClient } from './client';
 export function useMe() {
   return useQuery({
     queryKey: ['me'],
-    queryFn: () => apiClient.get<MeResponse>('/auth/me'),
-    retry: false,
+    queryFn: () =>
+      apiClient.get<{
+        id: string;
+        email: string;
+        name: string;
+        business?: { connectionStatus: string };
+      }>('/auth/me'),
   });
 }
 
-export function useReviews(query: ListReviewsQuery) {
-  const params = new URLSearchParams();
-  if (query.page) params.set('page', String(query.page));
-  if (query.limit) params.set('limit', String(query.limit));
-  if (query.search) params.set('search', query.search);
-  if (query.sort) params.set('sort', query.sort);
-  if (query.hasReply !== undefined) params.set('hasReply', String(query.hasReply));
-  query.status?.forEach((s) => params.append('status', s));
-  query.rating?.forEach((r) => params.append('rating', String(r)));
-
+export function useReviews(params?: { status?: string[]; limit?: number; search?: string; sort?: string; page?: number }) {
   return useQuery({
-    queryKey: ['reviews', query],
-    queryFn: () => apiClient.get<Paginated<Review>>(`/reviews?${params.toString()}`),
+    queryKey: ['reviews', params],
+    queryFn: () => {
+      const searchParams = new URLSearchParams();
+      if (params?.status) {
+        params.status.forEach((s) => searchParams.append('status', s));
+      }
+      if (params?.limit) {
+        searchParams.append('limit', params.limit.toString());
+      }
+      if (params?.search) {
+        searchParams.append('search', params.search);
+      }
+      if (params?.sort) {
+        searchParams.append('sort', params.sort);
+      }
+      if (params?.page) {
+        searchParams.append('page', params.page.toString());
+      }
+      const queryStr = searchParams.toString();
+      return apiClient.get<{ data: Review[] }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
+    },
   });
 }
 
-// Remplace lib/mock/replyApi.ts::generateReply — vrai appel API (MSW en dev)
 export function useGenerateReply() {
   return useMutation({
-    mutationFn: ({ reviewId, ...body }: { reviewId: string } & GenerateReplyRequest) =>
-      apiClient.post<{ content: string }>(`/reviews/${reviewId}/reply/generate`, body),
+    mutationFn: ({ reviewId }: { reviewId: string }) =>
+      apiClient.post<{ content: string }>(`/reviews/${reviewId}/generate-reply`),
   });
 }
 
-// Remplace lib/mock/replyApi.ts::publishReply — vrai appel API (MSW en dev),
-// invalide le cache 'reviews' pour que la réponse publiée persiste après un refetch
 export function usePublishReply() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
-      apiClient.post<PublishReplyResponse>(`/reviews/${reviewId}/reply/publish`, { content }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
-    },
+      apiClient.post<{ reply: { content: string } }>(`/reviews/${reviewId}/publish`, { content }),
   });
 }
 
@@ -65,37 +66,29 @@ export function useUpdateReviewStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) =>
-      apiClient.patch<Review>(`/reviews/${id}`, { status }),
+      apiClient.patch(`/reviews/${id}/status`, { status }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
 }
+
 export function useConnectBusiness() {
-  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiClient.post<{ connectionStatus: string }>('/business/connect-google'),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['me'] });
-    },
+    mutationFn: (data: any = {}) => apiClient.post('/business/connect', data),
   });
 }
 
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: ['notification-preferences'],
-    queryFn: () => apiClient.get<NotificationPreferences>('/me/notification-preferences'),
+    queryFn: () => apiClient.get<any>('/notifications/preferences'),
   });
 }
 
 export function useUpdateNotificationPreferences() {
-  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (prefs: NotificationPreferences) =>
-      apiClient.put<NotificationPreferences>('/me/notification-preferences', prefs),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
-    },
+    mutationFn: (data: any) => apiClient.put<any>('/notifications/preferences', data),
   });
 }
 
@@ -109,19 +102,12 @@ export function useSubscription() {
 export function useCreateCheckout() {
   return useMutation({
     mutationFn: (priceId: string) =>
-      apiClient.post<CheckoutResponse, CheckoutRequest>('/billing/checkout', { priceId }),
+      apiClient.post<CheckoutResponse>('/billing/checkout', { priceId }),
   });
 }
 
 export function useBillingPortal() {
   return useMutation({
     mutationFn: () => apiClient.post<BillingPortalResponse>('/billing/portal'),
-  });
-}
-
-export function useCollectLink() {
-  return useMutation({
-    mutationFn: () =>
-      apiClient.post<{ publicUrl: string; qrCodeSvg: string }>('/business/collect-link'),
   });
 }
