@@ -96,3 +96,21 @@ export const HandledStripeEvents = [
 export type HandledStripeEvent = (typeof HandledStripeEvents)[number];
 
 export type ProcessedWebhookEventId = string;
+export interface SubscriptionResponse {
+  plan: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface CheckoutRequest {
+  priceId: string;
+}
+
+export interface CheckoutResponse {
+  checkoutUrl: string;
+}
+
+export interface BillingPortalResponse {
+  portalUrl: string;
+}

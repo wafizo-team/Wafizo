@@ -8,6 +8,10 @@ import type {
   NotificationPreferences,
   GenerateReplyRequest,
   PublishReplyResponse,
+  SubscriptionResponse,
+  CheckoutRequest,
+  CheckoutResponse,
+  BillingPortalResponse,
 } from '@wafizo/shared';
 
 import { apiClient } from './client';
@@ -98,26 +102,20 @@ export function useUpdateNotificationPreferences() {
 export function useSubscription() {
   return useQuery({
     queryKey: ['subscription'],
-    queryFn: () =>
-      apiClient.get<{
-        plan: string;
-        status: string;
-        currentPeriodEnd: string | null;
-        cancelAtPeriodEnd: boolean;
-      }>('/billing/subscription'),
+    queryFn: () => apiClient.get<SubscriptionResponse>('/billing/subscription'),
   });
 }
 
 export function useCreateCheckout() {
   return useMutation({
     mutationFn: (priceId: string) =>
-      apiClient.post<{ checkoutUrl: string }>('/billing/checkout', { priceId }),
+      apiClient.post<CheckoutResponse, CheckoutRequest>('/billing/checkout', { priceId }),
   });
 }
 
 export function useBillingPortal() {
   return useMutation({
-    mutationFn: () => apiClient.post<{ portalUrl: string }>('/billing/portal'),
+    mutationFn: () => apiClient.post<BillingPortalResponse>('/billing/portal'),
   });
 }
 
