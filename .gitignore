@@ -24,3 +24,9 @@ infra/**/*.tfvars
 .DS_Store
 coverage/
 .agents/
+
+# Secrets K8s en clair — JAMAIS commités
+infra/k8s/secrets/wafizo-secrets.yml
+infra/k8s/secrets/*-secrets.yml
+!infra/k8s/secrets/wafizo-secrets.example.yml
+!infra/k8s/secrets/wafizo-sealed-secrets.yml
