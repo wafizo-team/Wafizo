@@ -22,7 +22,13 @@ export function useMe() {
   });
 }
 
-export function useReviews(params?: { status?: string[]; limit?: number; search?: string; sort?: string; page?: number }) {
+export function useReviews(params?: {
+  status?: string[];
+  limit?: number;
+  search?: string;
+  sort?: string;
+  page?: number;
+}) {
   return useQuery({
     queryKey: ['reviews', params],
     queryFn: () => {
@@ -68,7 +74,7 @@ export function useUpdateReviewStatus() {
     mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) =>
       apiClient.patch(`/reviews/${id}/status`, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
   });
 }
@@ -82,13 +88,14 @@ export function useConnectBusiness() {
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: ['notification-preferences'],
-    queryFn: () => apiClient.get<any>('/notifications/preferences'),
+    queryFn: () => apiClient.get<Record<string, unknown>>('/notifications/preferences'),
   });
 }
 
 export function useUpdateNotificationPreferences() {
   return useMutation({
-    mutationFn: (data: any) => apiClient.put<any>('/notifications/preferences', data),
+    mutationFn: (data: Record<string, unknown>) =>
+      apiClient.put<Record<string, unknown>>('/notifications/preferences', data),
   });
 }
 
