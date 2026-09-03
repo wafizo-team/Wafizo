@@ -14,6 +14,8 @@ COPY apps/web ./apps/web
 COPY tsconfig.base.json ./
 
 RUN pnpm --filter @wafizo/shared build
+ARG VITE_API_URL=https://api.wafizo.fr
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm --filter web build
 
 # ─── Production ───────────────────────────────────────────────────────────────
