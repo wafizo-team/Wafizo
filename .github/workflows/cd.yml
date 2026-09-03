@@ -91,7 +91,7 @@ jobs:
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.INSTANCE_IP }}
-          username: admin
+          username: debian
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             kubectl set image deployment/api \
