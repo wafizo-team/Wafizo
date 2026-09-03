@@ -71,6 +71,17 @@
     state: enabled
     policy: deny
 
+# ─── Modules kernel ───────────────────────────────────────────────────────────
+- name: Charger br_netfilter
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Persister br_netfilter au reboot
+  copy:
+    dest: /etc/modules-load.d/br_netfilter.conf
+    content: "br_netfilter\n"
+
 # ─── Optimisations système ────────────────────────────────────────────────────
 - name: Configurer sysctl pour K3s
   sysctl:

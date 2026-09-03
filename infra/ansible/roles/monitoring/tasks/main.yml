@@ -7,12 +7,12 @@
 
 # ─── Repo Helm ────────────────────────────────────────────────────────────────
 - name: Ajouter le repo Helm Prometheus
-  shell: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  shell: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 - name: Ajouter le repo Helm Grafana
-  shell: helm repo add grafana https://grafana.github.io/helm-charts
+  shell: helm repo add grafana https://grafana.github.io/helm-charts || true
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
@@ -22,90 +22,15 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 # ─── Prometheus ───────────────────────────────────────────────────────────────
-- name: Créer la config Alertmanager
-  copy:
-    dest: /tmp/alertmanager-config.yml
-    content: |
-      global:
-        smtp_smarthost: 'smtp.gmail.com:587'
-        smtp_from: 'wafizo.support@gmail.com'
-        smtp_auth_username: 'wafizo.support@gmail.com'
-        smtp_auth_password: '{{ alertmanager_smtp_password }}'
-        smtp_require_tls: true
-
-      route:
-        group_by: ['alertname']
-        group_wait: 30s
-        group_interval: 5m
-        repeat_interval: 12h
-        receiver: 'email'
-
-      receivers:
-        - name: 'email'
-          email_configs:
-            - to: 'wafizo.support@gmail.com'
-              send_resolved: true
-
-- name: Installer Prometheus + Alertmanager via Helm
+- name: Installer Prometheus via Helm
   shell: |
     helm upgrade --install prometheus prometheus-community/prometheus \
       --namespace monitoring \
       --set server.retention=7d \
       --set server.persistentVolume.size=5Gi \
-      --set alertmanager.enabled=true \
-      --set-file alertmanager.config=/tmp/alertmanager-config.yml \
+      --set alertmanager.enabled=false \
+      --timeout 5m \
       --wait
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
-- name: Appliquer les règles d'alerte
-  shell: |
-    kubectl apply -f - <<EOF
-    apiVersion: monitoring.coreos.com/v1
-    kind: PrometheusRule
-    metadata:
-      name: wafizo-alerts
-      namespace: monitoring
-    spec:
-      groups:
-        - name: wafizo
-          rules:
-            - alert: InstanceDown
-              expr: up == 0
-              for: 2m
-              labels:
-                severity: critical
-              annotations:
-                summary: "Instance down"
-                description: "Un service est inaccessible depuis 2 minutes"
-
-            - alert: DiskSpaceCritical
-              expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
-              for: 5m
-              labels:
-                severity: critical
-              annotations:
-                summary: "Espace disque critique"
-                description: "Moins de 10% d'espace disque disponible"
-
-            - alert: MemoryCritical
-              expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
-              for: 5m
-              labels:
-                severity: critical
-              annotations:
-                summary: "RAM critique"
-                description: "Moins de 10% de RAM disponible"
-
-            - alert: ApiDown
-              expr: probe_success{job="api-health"} == 0
-              for: 2m
-              labels:
-                severity: critical
-              annotations:
-                summary: "API Wafizo inaccessible"
-                description: "Le endpoint /health de l'API ne répond plus"
-    EOF
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
@@ -114,9 +39,10 @@
   shell: |
     helm upgrade --install grafana grafana/grafana \
       --namespace monitoring \
-      --set adminPassword=CHANGER_CE_MOT_DE_PASSE \
+      --set adminPassword=Wafizo2026! \
       --set persistence.enabled=true \
       --set persistence.size=2Gi \
+      --timeout 5m \
       --wait
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -126,8 +52,18 @@
   shell: |
     helm upgrade --install loki grafana/loki \
       --namespace monitoring \
+      --set deploymentMode=SingleBinary \
+      --set loki.auth_enabled=false \
       --set loki.commonConfig.replication_factor=1 \
       --set loki.storage.type=filesystem \
+      --set loki.useTestSchema=true \
+      --set singleBinary.replicas=1 \
+      --set read.replicas=0 \
+      --set write.replicas=0 \
+      --set backend.replicas=0 \
+      --set chunksCache.enabled=false \
+      --set resultsCache.enabled=false \
+      --timeout 5m \
       --wait
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
@@ -137,60 +73,8 @@
     helm upgrade --install promtail grafana/promtail \
       --namespace monitoring \
       --set config.lokiAddress=http://loki:3100/loki/api/v1/push \
+      --timeout 5m \
       --wait
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
-# ─── cAdvisor ─────────────────────────────────────────────────────────────────
-- name: Déployer cAdvisor
-  shell: |
-    kubectl apply -f - <<EOF
-    apiVersion: apps/v1
-    kind: DaemonSet
-    metadata:
-      name: cadvisor
-      namespace: monitoring
-    spec:
-      selector:
-        matchLabels:
-          app: cadvisor
-      template:
-        metadata:
-          labels:
-            app: cadvisor
-        spec:
-          containers:
-            - name: cadvisor
-              image: gcr.io/cadvisor/cadvisor:latest
-              ports:
-                - containerPort: 8080
-              volumeMounts:
-                - name: rootfs
-                  mountPath: /rootfs
-                  readOnly: true
-                - name: var-run
-                  mountPath: /var/run
-                  readOnly: true
-                - name: sys
-                  mountPath: /sys
-                  readOnly: true
-                - name: docker
-                  mountPath: /var/lib/docker
-                  readOnly: true
-          volumes:
-            - name: rootfs
-              hostPath:
-                path: /
-            - name: var-run
-              hostPath:
-                path: /var/run
-            - name: sys
-              hostPath:
-                path: /sys
-            - name: docker
-              hostPath:
-                path: /var/lib/docker
-    EOF
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 

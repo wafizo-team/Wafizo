@@ -1,7 +1,7 @@
 ---
 # ─── Installation Sealed Secrets ─────────────────────────────────────────────
 - name: Ajouter le repo Helm Sealed Secrets
-  shell: helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+  shell: helm repo add sealed-secrets https://bitnami.github.io/sealed-secrets
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
@@ -19,15 +19,9 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 # ─── Installation kubeseal CLI ────────────────────────────────────────────────
-- name: Récupérer la dernière version de kubeseal
-  shell: |
-    curl -s https://api.github.com/repos/bitnami-labs/sealed-secrets/releases/latest \
-    | grep tag_name | cut -d '"' -f 4 | sed 's/v//'
-  register: kubeseal_version
-
 - name: Télécharger kubeseal
   shell: |
-    curl -sfL https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ kubeseal_version.stdout }}/kubeseal-{{ kubeseal_version.stdout }}-linux-amd64.tar.gz \
+    curl -sfL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.0/kubeseal-0.26.0-linux-amd64.tar.gz \
     -o /tmp/kubeseal.tar.gz
   args:
     creates: /usr/local/bin/kubeseal

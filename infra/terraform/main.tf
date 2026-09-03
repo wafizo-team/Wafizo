@@ -24,50 +24,10 @@ resource "openstack_compute_keypair_v2" "wafizo_key" {
 
 # ─── Security Group ──────────────────────────────────────────────────────────
 
-resource "openstack_networking_secgroup_v2" "wafizo_sg" {
-  name        = "wafizo-prod-sg"
-  description = "SSH + HTTP + HTTPS + API K3s"
+data "openstack_networking_secgroup_v2" "default_sg" {
+  name = "default"
 }
 
-resource "openstack_networking_secgroup_rule_v2" "ssh" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 22
-  port_range_max    = 22
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = openstack_networking_secgroup_v2.wafizo_sg.id
-}
-
-resource "openstack_networking_secgroup_rule_v2" "http" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 80
-  port_range_max    = 80
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = openstack_networking_secgroup_v2.wafizo_sg.id
-}
-
-resource "openstack_networking_secgroup_rule_v2" "https" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 443
-  port_range_max    = 443
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = openstack_networking_secgroup_v2.wafizo_sg.id
-}
-
-resource "openstack_networking_secgroup_rule_v2" "k3s_api" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 6443
-  port_range_max    = 6443
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = openstack_networking_secgroup_v2.wafizo_sg.id
-}
 
 # ─── Image + Flavor ──────────────────────────────────────────────────────────
 
@@ -87,7 +47,7 @@ resource "openstack_compute_instance_v2" "wafizo" {
   image_id        = data.openstack_images_image_v2.debian.id
   flavor_id       = data.openstack_compute_flavor_v2.b3_8.id
   key_pair        = openstack_compute_keypair_v2.wafizo_key.name
-  security_groups = [openstack_networking_secgroup_v2.wafizo_sg.name]
+  security_groups = [data.openstack_networking_secgroup_v2.default_sg.name]
 
   network {
     name = "Ext-Net"
@@ -110,7 +70,7 @@ resource "openstack_compute_instance_v2" "wafizo" {
 
 resource "openstack_blockstorage_volume_v3" "wafizo_data" {
   name        = "wafizo-prod-data"
-  size        = 50
+  size        = 30
   description = "Données persistantes : PostgreSQL, volumes K3s, logs"
 }
 
