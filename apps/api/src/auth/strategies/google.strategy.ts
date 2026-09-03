@@ -16,12 +16,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   validate(
     _req: any,
     accessToken: string,
     _refreshToken: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     profile: any,
     done: VerifyCallback,
   ): void {

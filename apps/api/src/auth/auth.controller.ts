@@ -15,7 +15,6 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: any): unknown {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     return this.authService.googleLogin(req);
   }
 }
