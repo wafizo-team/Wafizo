@@ -1,6 +1,17 @@
+import { useEffect } from 'react';
+
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333';
 
 function LoginPage() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('accessToken');
+    if (token) {
+      localStorage.setItem('accessToken', token);
+      window.location.replace('/');
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <div className="w-full max-w-sm rounded-xl border bg-card p-8 text-center shadow-sm">
@@ -8,8 +19,7 @@ function LoginPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Connectez-vous pour gérer les avis de votre commerce.
         </p>
-
-        <a
+        
           href={`${API_URL}/auth/google`}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border bg-background px-4 py-2.5 text-sm font-medium hover:bg-muted"
         >
