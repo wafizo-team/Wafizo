@@ -20,6 +20,7 @@ function LoginPage() {
           Connectez-vous pour gérer les avis de votre commerce.
         </p>
         
+        <a
           href={`${API_URL}/auth/google`}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border bg-background px-4 py-2.5 text-sm font-medium hover:bg-muted"
         >
