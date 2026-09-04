@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import ReceiptCard from '../components/ReceiptCard';
 
 const STORAGE_KEY = 'wafizo_landing_emails';
+const APP_URL = 'https://app.wafizo.fr';
 
 function LandingPage() {
   const [email, setEmail] = useState('');
@@ -34,17 +35,27 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F3] text-[#16213E]">
-      {/* Header */}{' '}
+      {/* Header */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        {' '}
-        <span className="font-['Bricolage_Grotesque'] text-xl font-extrabold">Wafizo </span>
-        <a
-          href="#cta"
-          className="rounded-full bg-[#16213E] px-4 py-2 font-['Inter'] text-sm font-medium text-white transition hover:bg-[#16213E]/90"
-        >
-          Être prévenu
-        </a>
+        <span className="font-['Bricolage_Grotesque'] text-xl font-extrabold">Wafizo</span>
+
+        <div className="flex items-center gap-3">
+          <a
+            href={APP_URL}
+            className="rounded-full border border-[#16213E]/20 px-4 py-2 font-['Inter'] text-sm font-medium text-[#16213E] transition hover:border-[#16213E]/40"
+          >
+            Se connecter
+          </a>
+
+          <a
+            href="#cta"
+            className="rounded-full bg-[#16213E] px-4 py-2 font-['Inter'] text-sm font-medium text-white transition hover:bg-[#16213E]/90"
+          >
+            Être prévenu
+          </a>
+        </div>
       </header>
+
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
         <div>
@@ -89,26 +100,33 @@ function LandingPage() {
 
         <ReceiptCard />
       </section>
+
       {/* Problème */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
-            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">Le temps</h2>
+            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">
+              30 minutes perdues par avis
+            </h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
-              Répondre à chaque avis prend 5 à 10 minutes si vous réfléchissez au ton et à la
+              Répondre à chaque avis prend du temps si vous réfléchissez au ton et à la
               formulation.
             </p>
           </div>
 
           <div>
-            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">L'oubli</h2>
+            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">
+              Des avis sans réponse pendant des semaines
+            </h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
               Sans notification fiable, des avis restent parfois sans réponse pendant des semaines.
             </p>
           </div>
 
           <div>
-            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">Le prix</h2>
+            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">
+              Des outils conçus pour les grandes enseignes
+            </h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
               Les outils existants sont souvent pensés pour les agences multi-établissements — trop
               chers et trop complexes pour un commerce seul.
@@ -116,6 +134,7 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
       {/* Comment ça marche */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-6xl px-6">
@@ -162,6 +181,7 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
       {/* Différenciation */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <h2 className="font-['Bricolage_Grotesque'] text-2xl font-extrabold">
@@ -186,13 +206,27 @@ function LandingPage() {
             </div>
           ))}
         </div>
+
+        <div className="mt-8">
+          <a
+            href={APP_URL}
+            className="inline-block rounded-full bg-[#16213E] px-6 py-3 font-['Inter'] text-sm font-semibold text-white transition hover:bg-[#16213E]/90"
+          >
+            Essayer gratuitement
+          </a>
+        </div>
       </section>
+
       {/* Footer */}
       <footer className="border-t border-[#E3DED2] py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 font-['Inter'] text-xs text-[#16213E]/40 md:flex-row">
           <span>© 2026 Wafizo</span>
 
           <div className="flex gap-4">
+            <a href={APP_URL} className="transition hover:text-[#16213E]">
+              Ouvrir l'app
+            </a>
+
             <Link to="/mentions-legales" className="transition hover:text-[#16213E]">
               Mentions légales
             </Link>
