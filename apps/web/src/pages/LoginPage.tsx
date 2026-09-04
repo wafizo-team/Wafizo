@@ -7,7 +7,7 @@ function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('accessToken');
     if (token) {
-      localStorage.setItem('accessToken', token);
+      localStorage.setItem('wafizo_access_token', token);
       window.location.replace('/');
     }
   }, []);
