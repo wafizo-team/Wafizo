@@ -24,4 +24,10 @@ export class AuthController {
       `https://app.wafizo.fr?accessToken=${result.accessToken}`,
     );
   }
+
+  @Get('me')
+  async getMe(@Req() req: Request) {
+    const user = req.user as { sub: string; email: string };
+    return this.authService.findUserById(user.sub);
+  }
 }

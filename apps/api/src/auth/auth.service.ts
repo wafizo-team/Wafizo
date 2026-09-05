@@ -1,82 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
-
-interface GoogleUser {
-  email: string;
-  firstName?: string;
-  familyName?: string;
-  lastName?: string;
-  picture?: string;
-}
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { PrismaService } from "@prisma/prisma.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async findOrCreateUser(googleUser: GoogleUser) {
-    const email = googleUser.email;
-    const firstName = googleUser.firstName || '';
-    const lastName = googleUser.familyName || googleUser.lastName || '';
-    const name = `${firstName} ${lastName}`.trim() || 'Google User';
+  async validateUser(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return user;
+  }
+
+  async googleLogin(req: any) {
+    if (!req || !req.user) {
+      throw new UnauthorizedException("No user from Google");
+    }
 
     let user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: req.user.email },
     });
 
     if (!user) {
       user = await this.prisma.user.create({
         data: {
-          email,
-          name,
+          email: req.user.email,
+          name: req.user.name || "Google User",
         },
       });
     }
 
-    return user;
-  }
-
-  generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
-    return { accessToken, refreshToken };
-  }
-
-  async refreshTokens(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    return this.generateTokens(user.id, user.email);
-  }
-
-  async googleLogin(req: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const googleUser = req?.user as GoogleUser;
-    if (!googleUser || !googleUser.email) {
-      return { message: 'No user from Google' };
-    }
-
-    const user = await this.findOrCreateUser(googleUser);
-    const { accessToken, refreshToken } = this.generateTokens(
-      user.id,
-      user.email,
-    );
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = this.jwtService.sign(payload);
 
     return {
-      message: 'User successfully authenticated via Google',
+      message: "Successfully logged in with Google",
       accessToken,
-      refreshToken,
       user,
     };
+  }
+
+  async findUserById(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return user;
   }
 }
