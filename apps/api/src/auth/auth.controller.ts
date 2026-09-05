@@ -11,17 +11,19 @@ export class AuthController {
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(): Promise<void> {
-    // Initiates the Google OAuth flow
-  }
+  googleAuth() {}
 
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const result = await this.authService.googleLogin(req);
-    return res.redirect(
-      `https://app.wafizo.fr?accessToken=${result.accessToken}`,
-    );
+    const result = await this.authService.googleLogin(req as any);
+    return res.redirect(`https://app.wafizo.fr?accessToken=${result.accessToken}`);
+  }
+
+  @Get('me')
+  async getMe(@Req() req: Request) {
+    const user = req.user as { sub: string };
+    return this.authService.findUserById(user.sub);
   }
 }
