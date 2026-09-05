@@ -118,9 +118,6 @@ export function useBillingPortal() {
     mutationFn: () => apiClient.post<BillingPortalResponse>('/billing/portal'),
   });
 }
-    mutationFn: () => apiClient.post<{ portalUrl: string }>('/billing/portal'),
-  });
-}
 
 export function useCollectLink() {
   return useMutation({
