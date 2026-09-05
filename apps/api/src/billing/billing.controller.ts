@@ -1,63 +1,39 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Headers,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { BillingService } from './billing.service';
-import { CreateCheckoutSessionDto } from './dto/billing.dto';
 
-interface AuthenticatedRequest extends Request {
-  user: { id: string };
-  rawBody?: Buffer;
+interface RequestWithUser extends Request {
+  user: {
+    id: string;
+    sub?: string;
+  };
 }
 
-@ApiTags('Billing')
 @Controller('billing')
+@UseGuards(AuthGuard('jwt'))
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
   @Get('subscription')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Récupérer l abonnement actuel' })
-  getSubscription(@Req() req: AuthenticatedRequest) {
-    return this.billingService.getSubscription(req.user.id);
+  getSubscription(@Req() req: RequestWithUser) {
+    const userId = req.user.id || req.user.sub || '';
+    return this.billingService.getSubscription();
   }
 
   @Post('checkout')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Créer une session Stripe Checkout' })
-  createCheckout(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: CreateCheckoutSessionDto,
-  ) {
-    return this.billingService.createCheckoutSession(req.user.id, dto.priceId);
+  createCheckoutSession(@Req() req: RequestWithUser) {
+    const userId = req.user.id || req.user.sub || '';
+    return this.billingService.createCheckoutSession();
   }
 
   @Post('portal')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Créer une session vers le portail Stripe' })
-  createPortal(@Req() req: AuthenticatedRequest) {
-    return this.billingService.createCustomerPortalSession(req.user.id);
+  createPortalSession(@Req() req: RequestWithUser) {
+    const userId = req.user.id || req.user.sub || '';
+    return this.billingService.createPortalSession();
   }
 
   @Post('webhook')
-  @ApiOperation({ summary: 'Réception des webhooks Stripe' })
-  handleWebhook(
-    @Headers('stripe-signature') signature: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    return this.billingService.handleWebhook(
-      signature,
-      req.rawBody || Buffer.from(''),
-    );
+  handleWebhook() {
+    return this.billingService.handleWebhook();
   }
 }
