@@ -19,13 +19,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateOAuthUser(req: RequestWithUser) {
+  async googleLogin(req: RequestWithUser) {
     if (!req || !req.user) {
       throw new UnauthorizedException('No user from Google');
     }
 
     const googleUser = req.user;
-
     if (!googleUser.email) {
       throw new UnauthorizedException('Email not found from Google');
     }
@@ -38,20 +37,17 @@ export class AuthService {
       user = await this.prisma.user.create({
         data: {
           email: googleUser.email,
-          name: googleUser.name || 'Google User',
+          name: googleUser.name || '',
+          googleId: googleUser.id || null,
         },
       });
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
       user,
     };
-  }
-
-  async googleLogin(req: RequestWithUser) {
-    return this.validateOAuthUser(req);
   }
 
   async findUserById(id: string) {

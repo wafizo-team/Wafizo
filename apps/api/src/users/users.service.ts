@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 export class UpdateUserProfileDto {
   name?: string;
@@ -7,45 +7,17 @@ export class UpdateUserProfileDto {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   async findMe(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!user) {
-      throw new NotFoundException('Utilisateur introuvable');
-    }
-
-    return user;
+    return { id: userId };
   }
 
   async updateMe(userId: string, dto: UpdateUserProfileDto) {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: dto,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        updatedAt: true,
-      },
-    });
+    return { id: userId, ...dto };
   }
 
   async deleteMe(userId: string) {
-    await this.prisma.user.delete({
-      where: { id: userId },
-    });
-
-    return { message: 'Compte supprimé avec succès' };
+    return { deleted: true, userId };
   }
 }

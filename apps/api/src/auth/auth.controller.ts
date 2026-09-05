@@ -1,6 +1,7 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -14,11 +15,10 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
     const result = await this.authService.googleLogin(req);
-    // Redirect to frontend with access_token
     return res.redirect(
-      `https://app.wafizo.fr?access_token=${result.access_token}`,
+      `https://app.wafizo.fr?accessToken=${result.access_token}`,
     );
   }
 
