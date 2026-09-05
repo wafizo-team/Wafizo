@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { ReviewStatus } from '@prisma/client';
 import { Job } from 'bullmq';
-import { PrismaService } from "@prisma/prisma.service";
+import { PrismaService } from '@prisma/prisma.service';
 
 @Processor('review-sync')
 export class SyncReviewsProcessor extends WorkerHost {

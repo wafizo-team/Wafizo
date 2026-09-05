@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Plan } from '@prisma/client';
 import Stripe from 'stripe';
-import { PrismaService } from "@prisma/prisma.service";
+import { PrismaService } from '@prisma/prisma.service';
 
 @Injectable()
 export class BillingService {

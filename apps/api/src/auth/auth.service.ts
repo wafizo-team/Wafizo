@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "@prisma/prisma.service";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '@prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -12,14 +12,14 @@ export class AuthService {
   async validateUser(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new UnauthorizedException("User not found");
+      throw new UnauthorizedException('User not found');
     }
     return user;
   }
 
   async googleLogin(req: any) {
     if (!req || !req.user) {
-      throw new UnauthorizedException("No user from Google");
+      throw new UnauthorizedException('No user from Google');
     }
 
     let user = await this.prisma.user.findUnique({
@@ -30,7 +30,7 @@ export class AuthService {
       user = await this.prisma.user.create({
         data: {
           email: req.user.email,
-          name: req.user.name || "Google User",
+          name: req.user.name || 'Google User',
         },
       });
     }
@@ -39,7 +39,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     return {
-      message: "Successfully logged in with Google",
+      message: 'Successfully logged in with Google',
       accessToken,
       user,
     };
@@ -48,7 +48,7 @@ export class AuthService {
   async findUserById(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new UnauthorizedException("User not found");
+      throw new UnauthorizedException('User not found');
     }
     return user;
   }
