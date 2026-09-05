@@ -14,11 +14,11 @@ export function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded-lg">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      
+
       <form onSubmit={handleSave} className="space-y-6">
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-700">Notifications</h2>
-          
+
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
