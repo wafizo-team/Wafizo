@@ -1,0 +1,67 @@
+---
+# ─── Montage du volume OVH ────────────────────────────────────────────────────
+- name: Créer le point de montage
+  file:
+    path: /mnt/data
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Monter le volume de données OVH
+  mount:
+    path: /mnt/data
+    src: /dev/sdb
+    fstype: ext4
+    opts: defaults
+    state: mounted
+
+# ─── Dossier de backups ───────────────────────────────────────────────────────
+- name: Créer le dossier de backups sur le volume
+  file:
+    path: /mnt/data/backups
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+# ─── CronJob Kubernetes ───────────────────────────────────────────────────────
+- name: Copier le manifest CronJob sur le serveur
+  copy:
+    src: "{{ playbook_dir }}/../k8s/backup/cronjob.yml"
+    dest: /tmp/cronjob-backup.yml
+
+- name: Créer le namespace wafizo
+  shell: kubectl create namespace wafizo --dry-run=client -o yaml | kubectl apply -f -
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Appliquer le CronJob backup PostgreSQL
+  shell: kubectl apply -f /tmp/cronjob-backup.yml
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Script de restauration ───────────────────────────────────────────────────
+- name: Créer le script de restauration
+  copy:
+    dest: /usr/local/bin/wafizo-restore
+    mode: "0750"
+    content: |
+      #!/bin/bash
+      if [ -z "$1" ]; then
+        echo "Usage: wafizo-restore <fichier.sql.gz>"
+        exit 1
+      fi
+      BACKUP_FILE=$1
+      if [ ! -f "$BACKUP_FILE" ]; then
+        echo "Fichier introuvable : $BACKUP_FILE"
+        exit 1
+      fi
+      echo "⚠️  Restauration depuis $BACKUP_FILE"
+      read -p "Confirmer ? (oui/non) : " CONFIRM
+      if [ "$CONFIRM" != "oui" ]; then
+        echo "Annulé."
+        exit 0
+      fi
+      gunzip -c $BACKUP_FILE | psql $DATABASE_URL
+      echo "✅ Restauration terminée."

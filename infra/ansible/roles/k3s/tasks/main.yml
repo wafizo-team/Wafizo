@@ -21,21 +21,21 @@
     enabled: true
 
 # ─── Kubeconfig ───────────────────────────────────────────────────────────────
-- name: Créer le dossier .kube pour admin
+- name: Créer le dossier .kube pour debian
   file:
-    path: /home/admin/.kube
+    path: /home/debian/.kube
     state: directory
-    owner: admin
-    group: admin
+    owner: debian
+    group: debian
     mode: "0755"
 
-- name: Copier le kubeconfig pour admin
+- name: Copier le kubeconfig pour debian
   copy:
     src: /etc/rancher/k3s/k3s.yaml
-    dest: /home/admin/.kube/config
+    dest: /home/debian/.kube/config
     remote_src: yes
-    owner: admin
-    group: admin
+    owner: debian
+    group: debian
     mode: "0600"
 
 # ─── Helm ─────────────────────────────────────────────────────────────────────

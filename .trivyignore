@@ -1,0 +1,5 @@
+# CVE-2026-59873 : tar gzip bomb DoS.
+# Corrigé dans notre app (override tar >=7.5.19).
+# Reste présent dans les tar internes de npm/pnpm de l'image node:22-alpine,
+# non patchables de notre côté et non exploitables au runtime (outillage de build).
+CVE-2026-59873
