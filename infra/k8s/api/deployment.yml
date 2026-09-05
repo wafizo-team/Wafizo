@@ -13,6 +13,8 @@ spec:
       labels:
         app: api
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: api
           image: ghcr.io/wafizo-team/wafizo-api:latest
@@ -21,6 +23,8 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            - name: FRONTEND_URL
+              value: "https://app.wafizo.fr"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
