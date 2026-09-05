@@ -5,11 +5,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  getPreferences(_userId: string) {
+  getPreferences() {
     return { emailAlerts: true, pushAlerts: false };
   }
 
-  updatePreferences(_userId: string, dto: unknown) {
+  updatePreferences(dto: unknown) {
     return { success: true, dto };
   }
 }
