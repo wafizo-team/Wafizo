@@ -120,11 +120,7 @@ function LandingPage() {
               30 minutes perdues par avis
             </h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
-              Répondre à chaque avis prend du temps si vous réfléchissez au ton et à la
-            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">Le temps</h2>
-            <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
-              Répondre à chaque avis prend 5 à 10 minutes si vous réfléchissez au ton et à la
-              formulation.
+              Répondre à chaque avis prend 5 à 10 minutes si vous réfléchissez au ton et à la formulation.
             </p>
           </div>
 
@@ -132,7 +128,6 @@ function LandingPage() {
             <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">
               Des avis sans réponse pendant des semaines
             </h2>
-            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">L'oubli</h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
               Sans notification fiable, des avis restent parfois sans réponse pendant des semaines.
             </p>
@@ -142,7 +137,6 @@ function LandingPage() {
             <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">
               Des outils conçus pour les grandes enseignes
             </h2>
-            <h2 className="font-['Bricolage_Grotesque'] text-lg font-bold">Le prix</h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
               Les outils existants sont souvent pensés pour les agences multi-établissements — trop
               chers et trop complexes pour un commerce seul.
@@ -231,8 +225,6 @@ function LandingPage() {
             Essayer gratuitement
           </a>
         </div>
-      </section>
-
       </section>
       {/* Footer */}
       <footer className="border-t border-[#E3DED2] py-8">
