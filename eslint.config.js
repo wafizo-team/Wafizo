@@ -14,6 +14,8 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.pnpm-store/**',
       'pnpm-lock.yaml',
+      'apps/api/prisma.config.d.ts',
+      'apps/api/prisma/seed.d.ts',
     ],
   },
 

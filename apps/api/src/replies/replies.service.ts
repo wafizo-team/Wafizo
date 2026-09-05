@@ -5,19 +5,19 @@ import { PrismaService } from '../prisma/prisma.service';
 export class RepliesService {
   constructor(private prisma: PrismaService) {}
 
-  async generateReply(userId: string, reviewId: string) {
+  generateReply(_userId: string, _reviewId: string) {
     return { reply: 'Generated reply text' };
   }
 
-  async upsertReply(reviewId: string, dto: any) {
+  upsertReply(reviewId: string, dto: Record<string, unknown>) {
     return { reviewId, ...dto };
   }
 
-  async publishReply(reviewId: string) {
+  publishReply(reviewId: string) {
     return { success: true, reviewId };
   }
 
-  async deleteReply(reviewId: string) {
+  deleteReply(reviewId: string) {
     return { deleted: true, reviewId };
   }
 }

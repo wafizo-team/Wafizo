@@ -5,19 +5,19 @@ import { PrismaService } from '../prisma/prisma.service';
 export class BillingService {
   constructor(private prisma: PrismaService) {}
 
-  async getSubscription(userId: string) {
+  getSubscription(_userId: string) {
     return { status: 'active', plan: 'pro' };
   }
 
-  async createCheckoutSession(userId: string, priceId: string) {
+  createCheckoutSession(_userId: string, _priceId: string) {
     return { url: 'https://checkout.stripe.com/test' };
   }
 
-  async createCustomerPortalSession(userId: string) {
+  createCustomerPortalSession(_userId: string) {
     return { url: 'https://billing.stripe.com/test' };
   }
 
-  async handleWebhook(signature: string, payload: any) {
+  handleWebhook(_signature: string, _payload: unknown) {
     return { received: true };
   }
 }

@@ -9,15 +9,15 @@ export class UpdateUserProfileDto {
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findMe(userId: string) {
+  findMe(userId: string) {
     return { id: userId };
   }
 
-  async updateMe(userId: string, dto: UpdateUserProfileDto) {
+  updateMe(userId: string, dto: UpdateUserProfileDto) {
     return { id: userId, ...dto };
   }
 
-  async deleteMe(userId: string) {
+  deleteMe(userId: string) {
     return { deleted: true, userId };
   }
 }

@@ -5,15 +5,15 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(query: any) {
+  findAll(_query: Record<string, unknown>) {
     return [];
   }
 
-  async findOne(id: string) {
+  findOne(id: string) {
     return { id };
   }
 
-  async update(id: string, dto: any) {
+  update(id: string, dto: Record<string, unknown>) {
     return { id, ...dto };
   }
 }

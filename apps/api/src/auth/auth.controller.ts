@@ -1,7 +1,13 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+
+interface RequestWithUser extends Request {
+  user: {
+    id: string;
+    sub?: string;
+  };
+}
 
 @Controller('auth')
 export class AuthController {
@@ -9,23 +15,15 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    // Initiates the Google OAuth redirection
+  googleAuth() {
+    // Initiates Google OAuth flow
   }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
-    const result = await this.authService.googleLogin(req);
-    return res.redirect(
-      `https://app.wafizo.fr?accessToken=${result.access_token}`,
-    );
-  }
-
-  @Get('me')
-  @UseGuards(AuthGuard('jwt'))
-  async getMe(@Req() req: any) {
-    const user = req.user;
-    return this.authService.findUserById(user.sub);
+  googleAuthRedirect(@Req() req: RequestWithUser): unknown {
+    const userId = req.user.id || req.user.sub || '';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    return this.authService.login(userId);
   }
 }
