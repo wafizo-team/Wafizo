@@ -5,7 +5,8 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
+  findAll(query: unknown) {
+    void query;
     return [];
   }
 

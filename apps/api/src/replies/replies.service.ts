@@ -5,7 +5,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class RepliesService {
   constructor(private prisma: PrismaService) {}
 
-  generateReply() {
+  generateReply(userId: string, reviewId: string) {
+    void userId;
+    void reviewId;
     return { reply: 'Generated reply text' };
   }
 
