@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 
-interface GoogleUser {
+export interface GoogleUser {
   email: string;
   firstName?: string;
   familyName?: string;
@@ -47,7 +47,10 @@ export class AuthService {
       return { message: 'No user from Google' };
     }
     const user = await this.findOrCreateUser(googleUser);
-    const { accessToken, refreshToken } = this.generateTokens(user.id, user.email);
+    const { accessToken, refreshToken } = this.generateTokens(
+      user.id,
+      user.email,
+    );
     return { accessToken, refreshToken, user };
   }
 

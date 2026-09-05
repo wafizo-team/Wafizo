@@ -2,7 +2,7 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
 import { Public } from './decorators/public.decorator';
-import { AuthService } from './auth.service';
+import { AuthService, GoogleUser } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -17,8 +17,12 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const result = await this.authService.googleLogin(req as any);
-    return res.redirect(`https://app.wafizo.fr?accessToken=${result.accessToken}`);
+    const result = await this.authService.googleLogin(
+      req as Request & { user: GoogleUser },
+    );
+    return res.redirect(
+      `https://app.wafizo.fr?accessToken=${result.accessToken}`,
+    );
   }
 
   @Get('me')
