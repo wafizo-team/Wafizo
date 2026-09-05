@@ -1,6 +1,17 @@
+import { useEffect } from 'react';
+
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3333';
 
 function LoginPage() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('accessToken');
+    if (token) {
+      localStorage.setItem('wafizo_access_token', token);
+      window.location.replace('/');
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <div className="w-full max-w-sm rounded-xl border bg-card p-8 text-center shadow-sm">

@@ -12,13 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
-
-interface RequestWithUser {
-  user: {
-    id: string;
-    email: string;
-  };
-}
+import { AuthService, GoogleUser } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -56,13 +50,8 @@ export class AuthController {
   }
 
   @Get('me')
-  getProfile(@Req() req: RequestWithUser) {
-    return req.user;
-  }
-
-  @Public()
-  @Post('refresh')
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshTokens(refreshToken);
+  async getMe(@Req() req: Request) {
+    const user = req.user as { userId: string };
+    return this.authService.findUserById(user.userId);
   }
 }

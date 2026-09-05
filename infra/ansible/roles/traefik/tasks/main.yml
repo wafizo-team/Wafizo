@@ -6,8 +6,13 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 # ─── Repo Helm ────────────────────────────────────────────────────────────────
+- name: Supprimer l'ancien repo Helm Traefik si présent
+  shell: helm repo remove traefik || true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
 - name: Ajouter le repo Helm Traefik
-  shell: helm repo add traefik https://helm.traefik.io/traefik
+  shell: helm repo add traefik https://traefik.github.io/charts
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
@@ -20,15 +25,9 @@
 - name: Installer Traefik via Helm
   shell: |
     helm upgrade --install traefik traefik/traefik \
-      --namespace traefik \
-      --set deployment.replicas=1 \
-      --set ports.web.redirectTo.port=websecure \
-      --set ports.websecure.tls.enabled=true \
-      --set logs.general.level=INFO \
-      --wait
+      --namespace traefik
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
 # ─── Vérification ─────────────────────────────────────────────────────────────
 - name: Vérifier que Traefik est running
   shell: kubectl get pods -n traefik

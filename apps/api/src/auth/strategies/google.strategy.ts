@@ -1,44 +1,42 @@
-import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
-import { AuthService } from '../auth.service';
+import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(private readonly authService: AuthService) {
+  constructor() {
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      clientID: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL:
         process.env.GOOGLE_CALLBACK_URL ||
-        'http://localhost:3000/auth/google/callback',
+        'https://wafizo-auth.loca.lt/auth/google/callback',
       scope: ['email', 'profile'],
+      passReqToCallback: true,
     });
   }
 
-  async validate(
-    _accessToken: string,
+  validate(
+    _req: any,
+    accessToken: string,
     _refreshToken: string,
-    profile: Profile,
+
+    profile: any,
     done: VerifyCallback,
-  ): Promise<void> {
-    const { name, emails, id, photos } = profile;
-
-    const formattedName = name
-      ? `${name.givenName || ''} ${name.familyName || ''}`.trim()
-      : 'Utilisateur Google';
-
-    const userProfile = {
-      googleId: id,
-      email: emails && emails[0] ? emails[0].value : '',
-      name: formattedName,
-      picture: photos && photos[0] ? photos[0].value : undefined,
+  ): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { name, emails, photos } = profile;
+    const user = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      email: emails?.[0]?.value,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      firstName: name?.givenName,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      lastName: name?.familyName,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      picture: photos?.[0]?.value,
+      accessToken,
     };
-
-    const user = (await this.authService.findOrCreateUser(
-      userProfile,
-    )) as Express.User;
-
     done(null, user);
   }
 }
