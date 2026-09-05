@@ -1,18 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
-import { AuthService } from './auth.service';
-import { Public } from './decorators/public.decorator';
+import type { Request, Response } from 'express';
 import { AuthService, GoogleUser } from './auth.service';
+import { Public } from './decorators/public.decorator';
+
+interface RequestWithUser extends Request {
+  user: GoogleUser & { id?: string; googleId?: string };
+}
 
 @Controller('auth')
 export class AuthController {
@@ -29,23 +24,19 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(
-    @Req() req: RequestWithUser,
-    @Res() res: Response,
-  ) {
-    const { accessToken, refreshToken } = await this.authService.generateTokens(
-      req.user,
+  async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
+    const user = await this.authService.findOrCreateUser(req.user);
+    const { accessToken, refreshToken } = this.authService.generateTokens(
+      user.id,
+      user.email,
     );
-
     const frontendUrl = this.configService.get<string>(
       'FRONTEND_URL',
       'http://localhost:5173',
     );
-
     const redirectUrl = new URL('/auth/callback', frontendUrl);
     redirectUrl.searchParams.set('accessToken', accessToken);
     redirectUrl.searchParams.set('refreshToken', refreshToken);
-
     return res.redirect(redirectUrl.toString());
   }
 
