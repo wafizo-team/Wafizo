@@ -36,8 +36,8 @@ export class AuthService {
 
   generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload);
     return { accessToken, refreshToken };
   }
 
