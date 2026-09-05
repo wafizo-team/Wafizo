@@ -4,6 +4,7 @@ import { BusinessService } from './business.service';
 
 interface RequestWithUser {
   user: {
+    userId?: string;
     id?: string;
     sub?: string;
   };
@@ -16,7 +17,7 @@ export class BusinessController {
 
   @Post('connect')
   async connectBusiness(@Req() req: RequestWithUser): Promise<unknown> {
-    const userId = req.user.id ?? req.user.sub ?? '';
+    const userId = req.user.userId ?? req.user.sub ?? req.user.id ?? '';
     return this.businessService.connectBusiness(userId);
   }
 }
