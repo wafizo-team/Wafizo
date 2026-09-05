@@ -13,6 +13,8 @@ spec:
       labels:
         app: api
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: api
           image: ghcr.io/wafizo-team/wafizo-api:latest
