@@ -118,3 +118,10 @@ export function useBillingPortal() {
     mutationFn: () => apiClient.post<BillingPortalResponse>('/billing/portal'),
   });
 }
+
+export function useCollectLink() {
+  return useMutation({
+    mutationFn: () =>
+      apiClient.post<{ publicUrl: string; qrCodeSvg: string }>('/business/collect-link'),
+  });
+}
