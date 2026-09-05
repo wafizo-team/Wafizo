@@ -23,7 +23,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: RequestWithUser): unknown {
     const userId = req.user.id || req.user.sub || '';
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     return this.authService.login(userId);
   }
 }
