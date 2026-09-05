@@ -20,8 +20,8 @@ import { PrismaModule } from '../prisma/prisma.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'super-secret-key',
-        signOptions: { expiresIn: '1d' },
+        secret: configService.get<string>('JWT_SECRET')!,
+        signOptions: { expiresIn: '15m' },
       }),
     }),
   ],
