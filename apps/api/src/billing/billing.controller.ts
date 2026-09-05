@@ -17,18 +17,21 @@ export class BillingController {
   @Get('subscription')
   getSubscription(@Req() req: RequestWithUser) {
     const userId = req.user.id || req.user.sub || '';
+    void userId;
     return this.billingService.getSubscription();
   }
 
   @Post('checkout')
   createCheckoutSession(@Req() req: RequestWithUser) {
     const userId = req.user.id || req.user.sub || '';
+    void userId;
     return this.billingService.createCheckoutSession();
   }
 
   @Post('portal')
   createPortalSession(@Req() req: RequestWithUser) {
     const userId = req.user.id || req.user.sub || '';
+    void userId;
     return this.billingService.createPortalSession();
   }
 
