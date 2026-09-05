@@ -21,7 +21,7 @@ export class AuthController {
       req as Request & { user: GoogleUser },
     );
     return res.redirect(
-      `https://app.wafizo.fr?accessToken=${result.accessToken}`,
+      `https://app.wafizo.fr/login?accessToken=${result.accessToken}`,
     );
   }
 
