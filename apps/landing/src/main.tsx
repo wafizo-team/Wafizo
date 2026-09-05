@@ -6,7 +6,9 @@ import LandingPage from './pages/LandingPage.tsx';
 import MentionsLegalesPage from './pages/MentionsLegalesPage.tsx';
 import ConfidentialitePage from './pages/ConfidentialitePage.tsx';
 
-createRoot(document.getElementById('root')).render(
+const root = document.getElementById('root');
+if (!root) throw new Error('Root element not found');
+createRoot(root).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
