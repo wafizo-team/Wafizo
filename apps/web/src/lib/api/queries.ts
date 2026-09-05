@@ -51,7 +51,10 @@ export function useReviews(params?: {
         searchParams.append('page', params.page.toString());
       }
       const queryStr = searchParams.toString();
-      return apiClient.get<{ data: Review[]; meta: { totalItems: number; page: number; limit: number; totalPages: number } }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
+      return apiClient.get<{
+        data: Review[];
+        meta: { totalItems: number; page: number; limit: number; totalPages: number };
+      }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
     },
   });
 }

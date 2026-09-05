@@ -55,7 +55,6 @@ function LandingPage() {
           </a>
         </div>
       </header>
-
       {/* Header */}{' '}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         {' '}
@@ -111,7 +110,6 @@ function LandingPage() {
 
         <ReceiptCard />
       </section>
-
       {/* Problème */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="grid gap-8 md:grid-cols-3">
@@ -120,7 +118,8 @@ function LandingPage() {
               30 minutes perdues par avis
             </h2>
             <p className="mt-2 font-['Inter'] text-sm leading-relaxed text-[#16213E]/60">
-              Répondre à chaque avis prend 5 à 10 minutes si vous réfléchissez au ton et à la formulation.
+              Répondre à chaque avis prend 5 à 10 minutes si vous réfléchissez au ton et à la
+              formulation.
             </p>
           </div>
 
@@ -144,7 +143,6 @@ function LandingPage() {
           </div>
         </div>
       </section>
-
       {/* Comment ça marche */}
       <section className="bg-white py-16">
         <div className="mx-auto max-w-6xl px-6">
@@ -191,7 +189,6 @@ function LandingPage() {
           </div>
         </div>
       </section>
-
       {/* Différenciation */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <h2 className="font-['Bricolage_Grotesque'] text-2xl font-extrabold">

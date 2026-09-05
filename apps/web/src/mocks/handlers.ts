@@ -155,8 +155,7 @@ export const handlers = [
     return HttpResponse.json({
       plan: currentPlan,
       status: SubscriptionStatus.ACTIVE,
-      currentPeriodEnd:
-        currentPlan === Plan.PRO ? '2026-09-25T00:00:00.000Z' : null,
+      currentPeriodEnd: currentPlan === Plan.PRO ? '2026-09-25T00:00:00.000Z' : null,
       cancelAtPeriodEnd: false,
     });
   }),

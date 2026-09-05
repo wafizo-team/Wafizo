@@ -103,7 +103,8 @@ export const mockReviews: Review[] = [
     reply: {
       id: 'rep3',
       reviewId: 'r6',
-      content: "Merci beaucoup pour votre retour ! Toute l'équipe est ravie de vous avoir accueilli.",
+      content:
+        "Merci beaucoup pour votre retour ! Toute l'équipe est ravie de vous avoir accueilli.",
       status: ReplyStatus.PUBLISHED,
       origin: ReplyOrigin.AI,
       publishedAt: '2026-08-10T08:14:00.000Z',
