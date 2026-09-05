@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Business } from '@wafizo/shared';
 import type {
   SubscriptionResponse,
   CheckoutResponse,
@@ -17,7 +18,8 @@ export function useMe() {
         id: string;
         email: string;
         name: string;
-        business?: { connectionStatus: string };
+        createdAt: string;
+        business?: Business | null;
       }>('/auth/me'),
   });
 }
@@ -49,7 +51,10 @@ export function useReviews(params?: {
         searchParams.append('page', params.page.toString());
       }
       const queryStr = searchParams.toString();
-      return apiClient.get<{ data: Review[] }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
+      return apiClient.get<{
+        data: Review[];
+        meta: { totalItems: number; page: number; limit: number; totalPages: number };
+      }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
     },
   });
 }
