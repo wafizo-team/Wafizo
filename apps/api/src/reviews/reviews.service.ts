@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(_query: Record<string, unknown>) {
+  findAll(_query: unknown) {
     return [];
   }
 
@@ -13,7 +13,7 @@ export class ReviewsService {
     return { id };
   }
 
-  update(id: string, dto: Record<string, unknown>) {
-    return { id, ...dto };
+  update(id: string, dto: unknown) {
+    return { id, dto };
   }
 }

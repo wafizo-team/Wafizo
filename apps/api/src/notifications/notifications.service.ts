@@ -9,7 +9,7 @@ export class NotificationsService {
     return { emailAlerts: true, pushAlerts: false };
   }
 
-  updatePreferences(_userId: string, dto: Record<string, unknown>) {
+  updatePreferences(_userId: string, dto: unknown) {
     return { success: true, dto };
   }
 }

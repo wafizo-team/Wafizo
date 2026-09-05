@@ -9,8 +9,8 @@ export class RepliesService {
     return { reply: 'Generated reply text' };
   }
 
-  upsertReply(reviewId: string, dto: Record<string, unknown>) {
-    return { reviewId, ...dto };
+  upsertReply(reviewId: string, dto: unknown) {
+    return { reviewId, dto };
   }
 
   publishReply(reviewId: string) {
