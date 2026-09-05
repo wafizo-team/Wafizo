@@ -1,55 +1,62 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '@prisma/prisma.service';
+import { PrismaService } from '../prisma.service';
+
+interface GoogleUser {
+  id?: string;
+  email?: string;
+  name?: string;
+}
+
+interface RequestWithUser {
+  user?: GoogleUser;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
+    private prisma: PrismaService,
+    private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user;
-  }
-
-  async googleLogin(req: any) {
+  async validateOAuthUser(req: RequestWithUser) {
     if (!req || !req.user) {
       throw new UnauthorizedException('No user from Google');
     }
 
+    const googleUser = req.user;
+
+    if (!googleUser.email) {
+      throw new UnauthorizedException('Email not found from Google');
+    }
+
     let user = await this.prisma.user.findUnique({
-      where: { email: req.user.email },
+      where: { email: googleUser.email },
     });
 
     if (!user) {
       user = await this.prisma.user.create({
         data: {
-          email: req.user.email,
-          name: req.user.name || 'Google User',
+          email: googleUser.email,
+          name: googleUser.name || 'Google User',
         },
       });
     }
 
     const payload = { sub: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload);
-
     return {
-      message: 'Successfully logged in with Google',
-      accessToken,
+      access_token: this.jwtService.sign(payload),
       user,
     };
   }
 
+  async googleLogin(req: RequestWithUser) {
+    return this.validateOAuthUser(req);
+  }
+
   async findUserById(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user;
+    return this.prisma.user.findUnique({
+      where: { id },
+    });
   }
 }

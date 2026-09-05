@@ -34,12 +34,13 @@
     }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "prisma.config.ts",
-    "prisma"
+    "prisma",
+    "prisma.config.ts"
   ]
 }
