@@ -1,5 +1,15 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 
@@ -12,7 +22,10 @@ interface RequestWithUser {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @Get('google')
@@ -22,8 +35,24 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: RequestWithUser) {
-    return this.authService.generateTokens(req.user);
+  async googleAuthRedirect(
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.authService.generateTokens(
+      req.user,
+    );
+
+    const frontendUrl = this.configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost:5173',
+    );
+
+    const redirectUrl = new URL('/auth/callback', frontendUrl);
+    redirectUrl.searchParams.set('accessToken', accessToken);
+    redirectUrl.searchParams.set('refreshToken', refreshToken);
+
+    return res.redirect(redirectUrl.toString());
   }
 
   @Get('me')
