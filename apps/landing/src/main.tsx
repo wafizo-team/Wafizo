@@ -6,7 +6,7 @@ import LandingPage from './pages/LandingPage.tsx';
 import MentionsLegalesPage from './pages/MentionsLegalesPage.tsx';
 import ConfidentialitePage from './pages/ConfidentialitePage.tsx';
 
-createRoot(document.getElementById('root') as HTMLElement).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
