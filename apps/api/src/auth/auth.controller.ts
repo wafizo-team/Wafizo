@@ -27,7 +27,7 @@ export class AuthController {
 
   @Get('me')
   async getMe(@Req() req: Request) {
-    const user = req.user as { sub: string };
-    return this.authService.findUserById(user.sub);
+    const user = req.user as { userId: string };
+    return this.authService.findUserById(user.userId);
   }
 }
