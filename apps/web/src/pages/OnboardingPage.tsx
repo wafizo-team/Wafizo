@@ -1,13 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-
 import { useConnectBusiness } from '@/lib/api/queries';
+import { useQueryClient } from '@tanstack/react-query';
 
 function OnboardingPage() {
   const connectBusiness = useConnectBusiness();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   async function handleConnect() {
     await connectBusiness.mutateAsync();
+    await queryClient.invalidateQueries({ queryKey: ['me'] });
     void navigate('/', { replace: true });
   }
 
