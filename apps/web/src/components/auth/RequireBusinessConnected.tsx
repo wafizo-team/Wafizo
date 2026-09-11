@@ -10,8 +10,10 @@ function RequireBusinessConnected() {
     return null;
   }
 
-  // Un business est "connecté" si l'user a au moins un business avec une source GOOGLE
-  const isConnected = data?.businesses?.some((b) => b.sources.some((s) => s.type === 'GOOGLE'));
+  // TODO(dette-technique): réactiver le check sources.some(s => s.type === 'GOOGLE')
+  // quand plusieurs types de sources (Google, Facebook, etc.) seront supportés,
+  // ET que POST /business/connect créera aussi la Source Google associée.
+  const isConnected = (data?.businesses?.length ?? 0) > 0;
 
   if (!isConnected) {
     return <Navigate to="/onboarding" replace />;
