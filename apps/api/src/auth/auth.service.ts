@@ -57,7 +57,6 @@ export class AuthService {
     return this.generateTokens({ id: user.id, email: user.email });
   }
 
-<<<<<<< HEAD
   async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken);
@@ -71,8 +70,7 @@ export class AuthService {
       return this.generateTokens({ id: user.id, email: user.email });
     } catch (error) {
       throw new UnauthorizedException('Refresh token invalide ou expiré');
-    }
-=======
+}
   async findUserById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
@@ -97,6 +95,5 @@ export class AuthService {
         },
       },
     });
->>>>>>> origin/main
   }
 }
