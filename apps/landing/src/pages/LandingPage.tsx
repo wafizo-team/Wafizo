@@ -1434,7 +1434,8 @@ export default function LandingPage() {
                   </div>
 
                   <button
-                    className="wf-btn" onClick={() => window.location.href = "https://app.wafizo.fr/register"}
+                    className="wf-btn"
+                    onClick={() => (window.location.href = 'https://app.wafizo.fr/register')}
                     style={{
                       marginTop: 28,
                       width: '100%',
@@ -1607,7 +1608,8 @@ export default function LandingPage() {
               Essayez gratuitement, sans carte bancaire.
             </p>
             <button
-              className="wf-btn" onClick={() => window.location.href = "https://app.wafizo.fr/register"}
+              className="wf-btn"
+              onClick={() => (window.location.href = 'https://app.wafizo.fr/register')}
               style={{
                 marginTop: 34,
                 background: t.accentBright,
@@ -1648,7 +1650,11 @@ export default function LandingPage() {
         >
           <span>© 2026 Wafizo</span>
           <div style={{ display: 'flex', gap: 24 }}>
-            <a href="https://app.wafizo.fr" className="wf-link" style={{ color: t.inkFaint, textDecoration: 'none' }}>
+            <a
+              href="https://app.wafizo.fr"
+              className="wf-link"
+              style={{ color: t.inkFaint, textDecoration: 'none' }}
+            >
               Ouvrir l'app
             </a>
             <a href="#" className="wf-link" style={{ color: t.inkFaint, textDecoration: 'none' }}>
