@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Business } from '@wafizo/shared';
 import type {
   SubscriptionResponse,
   CheckoutResponse,
@@ -9,10 +8,32 @@ import type {
 
 import { apiClient } from './client';
 
+// Type local — reflète le vrai retour actuel de /auth/me
+// TODO(dette-technique): remplacer par le type Business de @wafizo/shared
+// une fois l'intégration Google My Business API implémentée côté back
+// (connectionStatus, googleLocationId, lastSyncAt, address).
+interface MeResponse {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+  businesses: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    sources: Array<{
+      id: string;
+      type: string;
+      externalId: string;
+    }>;
+  }>;
+}
+
 export function useMe() {
   const token = localStorage.getItem('token');
   return useQuery({
     queryKey: ['me'],
+<<<<<<< HEAD
     queryFn: () =>
       apiClient.get<{
         id: string;
@@ -22,6 +43,9 @@ export function useMe() {
         business?: Business | null;
       }>('/auth/me'),
     enabled: !!token,
+=======
+    queryFn: () => apiClient.get<MeResponse>('/auth/me'),
+>>>>>>> origin/main
   });
 }
 

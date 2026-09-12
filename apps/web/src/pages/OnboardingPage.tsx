@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -9,6 +10,22 @@ export default function OnboardingPage() {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://192.168.100.22:3333';
     window.location.href = `${apiUrl}/auth/google`;
   };
+=======
+import { useNavigate } from 'react-router-dom';
+import { useConnectBusiness } from '@/lib/api/queries';
+import { useQueryClient } from '@tanstack/react-query';
+
+function OnboardingPage() {
+  const connectBusiness = useConnectBusiness();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  async function handleConnect() {
+    await connectBusiness.mutateAsync();
+    await queryClient.invalidateQueries({ queryKey: ['me'] });
+    void navigate('/', { replace: true });
+  }
+>>>>>>> origin/main
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
