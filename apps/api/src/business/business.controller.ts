@@ -27,7 +27,6 @@ export class BusinessController {
     }
   async connectBusiness(@Req() req: RequestWithUser): Promise<unknown> {
     const userId = req.user.userId ?? req.user.sub ?? req.user.id ?? '';
->>>>>>> origin/main
     return this.businessService.connectBusiness(userId);
   }
 }
