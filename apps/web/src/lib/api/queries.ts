@@ -4,13 +4,13 @@ import type {
   SubscriptionResponse,
   CheckoutResponse,
   BillingPortalResponse,
-  Review,
   ReviewStatus,
 } from '@wafizo/shared';
 
 import { apiClient } from './client';
 
 export function useMe() {
+  const token = localStorage.getItem('token');
   return useQuery({
     queryKey: ['me'],
     queryFn: () =>
@@ -21,6 +21,7 @@ export function useMe() {
         createdAt: string;
         business?: Business | null;
       }>('/auth/me'),
+    enabled: !!token,
   });
 }
 
@@ -33,7 +34,7 @@ export function useReviews(params?: {
 }) {
   return useQuery({
     queryKey: ['reviews', params],
-    queryFn: () => {
+    queryFn: async () => {
       const searchParams = new URLSearchParams();
       if (params?.status) {
         params.status.forEach((s) => searchParams.append('status', s));
@@ -55,21 +56,32 @@ export function useReviews(params?: {
         data: Review[];
         meta: { totalItems: number; page: number; limit: number; totalPages: number };
       }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
+      const query = searchParams.toString();
+      const res = await apiClient.get<any>(query ? `/reviews?${query}` : '/reviews');
+      return res;
     },
   });
 }
 
 export function useGenerateReply() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId }: { reviewId: string }) =>
-      apiClient.post<{ content: string }>(`/reviews/${reviewId}/generate-reply`),
+      apiClient.post<any>(`/reviews/${reviewId}/generate`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
   });
 }
 
 export function usePublishReply() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
-      apiClient.post<{ reply: { content: string } }>(`/reviews/${reviewId}/publish`, { content }),
+      apiClient.post<any>(`/reviews/${reviewId}/reply`, { content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
   });
 }
 
@@ -77,56 +89,46 @@ export function useUpdateReviewStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) =>
-      apiClient.patch(`/reviews/${id}/status`, { status }),
+      apiClient.patch<any>(`/reviews/${id}/status`, { status }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
-  });
-}
-
-export function useConnectBusiness() {
-  return useMutation<unknown, Error, void>({
-    mutationFn: () => apiClient.post('/business/connect', {}),
   });
 }
 
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: ['notification-preferences'],
-    queryFn: () => apiClient.get<Record<string, unknown>>('/notifications/preferences'),
+    queryFn: () => apiClient.get('/settings/notifications'),
   });
 }
 
 export function useUpdateNotificationPreferences() {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) =>
-      apiClient.put<Record<string, unknown>>('/notifications/preferences', data),
+    mutationFn: (preferences: any) => apiClient.put('/settings/notifications', preferences),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+    },
   });
 }
 
 export function useSubscription() {
   return useQuery({
     queryKey: ['subscription'],
-    queryFn: () => apiClient.get<SubscriptionResponse>('/billing/subscription'),
+    queryFn: () => apiClient.get<SubscriptionResponse>('/subscription'),
   });
 }
 
 export function useCreateCheckout() {
   return useMutation({
     mutationFn: (priceId: string) =>
-      apiClient.post<CheckoutResponse>('/billing/checkout', { priceId }),
+      apiClient.post<CheckoutResponse>('/subscription/checkout', { priceId }),
   });
 }
 
 export function useBillingPortal() {
   return useMutation({
-    mutationFn: () => apiClient.post<BillingPortalResponse>('/billing/portal'),
-  });
-}
-
-export function useCollectLink() {
-  return useMutation({
-    mutationFn: () =>
-      apiClient.post<{ publicUrl: string; qrCodeSvg: string }>('/business/collect-link'),
+    mutationFn: () => apiClient.post<BillingPortalResponse>('/subscription/portal', {}),
   });
 }

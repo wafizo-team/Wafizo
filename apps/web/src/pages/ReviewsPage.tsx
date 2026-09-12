@@ -1,89 +1,44 @@
 import { useState } from 'react';
-import { ReviewStatus, ReviewSort } from '@wafizo/shared';
-
 import { useReviews } from '@/lib/api/queries';
 import ReviewCard from '@/components/reviews/ReviewCard';
 
-const statusFilters: { label: string; value: ReviewStatus | 'ALL' }[] = [
-  { label: 'Tous', value: 'ALL' },
-  { label: 'Nouveaux', value: ReviewStatus.NEW },
-  { label: 'Répondus', value: ReviewStatus.REPLIED },
-  { label: 'Ignorés', value: ReviewStatus.IGNORED },
-];
-
-function ReviewsPage() {
-  const [statusFilter, setStatusFilter] = useState<ReviewStatus | 'ALL'>('ALL');
+export function ReviewsPage() {
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<ReviewSort>(ReviewSort.PUBLISHED_AT_DESC);
+  const { data, isLoading, isError } = useReviews({ search });
 
-  const { data, isLoading, isError } = useReviews({
-    status: statusFilter === 'ALL' ? undefined : [statusFilter],
-    search: search.trim() || undefined,
-    sort,
-    page: 1,
-    limit: 50,
-  });
+  if (isLoading) {
+    return <div className="p-8 text-center">Chargement des avis...</div>;
+  }
+
+  if (isError) {
+    return <div className="p-8 text-center text-red-500">Erreur lors du chargement des avis.</div>;
+  }
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Avis</h1>
-        <p className="mt-2 text-muted-foreground">
-          Consultez et gérez les avis de votre établissement.
-        </p>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight">Gestion des Avis</h1>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 rounded-lg border bg-card p-1">
-          {statusFilters.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => setStatusFilter(f.value)}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                statusFilter === f.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
+      <div className="flex items-center space-x-2">
         <input
           type="text"
-          placeholder="Rechercher un avis..."
+          placeholder="Rechercher dans les avis..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] rounded-lg border bg-card px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+          onChange={(e: any) => setSearch(e.target.value)}
+          className="max-w-sm flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         />
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as ReviewSort)}
-          className="rounded-lg border bg-card px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-        >
-          <option value={ReviewSort.PUBLISHED_AT_DESC}>Plus récents</option>
-          <option value={ReviewSort.PUBLISHED_AT_ASC}>Plus anciens</option>
-          <option value={ReviewSort.RATING_DESC}>Note décroissante</option>
-          <option value={ReviewSort.RATING_ASC}>Note croissante</option>
-        </select>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
-
-      {isError && (
-        <p className="text-sm text-red-600">Impossible de charger les avis. Réessayez plus tard.</p>
-      )}
-
       {data && data.data.length === 0 && (
-        <p className="text-sm text-muted-foreground">Aucun avis ne correspond à ces critères.</p>
+        <div className="text-center py-12 text-muted-foreground">
+          Aucun avis trouvé pour le moment.
+        </div>
       )}
 
       {data && data.data.length > 0 && (
-        <div className="space-y-4">
-          {data.data.map((review) => (
+        <div className="grid gap-4">
+          {data.data.map((review: any) => (
             <ReviewCard key={review.id} review={review} />
           ))}
         </div>

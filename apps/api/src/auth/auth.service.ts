@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -24,40 +24,52 @@ export class AuthService {
     const name = `${firstName} ${lastName}`.trim() || 'Google User';
 
     let user = await this.prisma.user.findUnique({ where: { email } });
-
+    
     if (!user) {
       user = await this.prisma.user.create({
-        data: { email, name },
+        data: {
+          email,
+          name,
+        },
       });
     }
 
     return user;
   }
 
-  generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload);
-    return { accessToken, refreshToken };
+  async generateTokens(user: { id: string; email: string }) {
+    const payload = { sub: user.id, email: user.email };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
   async googleLogin(req: { user: GoogleUser }) {
-    const googleUser = req.user;
-    if (!googleUser?.email) {
-      return { message: 'No user from Google' };
+    if (!req.user) {
+      throw new UnauthorizedException('Aucun utilisateur Google trouvé');
     }
-    const user = await this.findOrCreateUser(googleUser);
-    const { accessToken, refreshToken } = this.generateTokens(
-      user.id,
-      user.email,
-    );
-    return { accessToken, refreshToken, user };
+
+    const user = await this.findOrCreateUser(req.user);
+    return this.generateTokens({ id: user.id, email: user.email });
   }
 
-  async findUserById(id: string) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: { id: true, email: true, name: true, createdAt: true },
-    });
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+      const userId = payload.sub || payload.userId;
+
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new UnauthorizedException('Utilisateur non trouvé');
+      }
+
+      return this.generateTokens({ id: user.id, email: user.email });
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token invalide ou expiré');
+    }
   }
 }

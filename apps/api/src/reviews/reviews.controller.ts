@@ -17,7 +17,16 @@ export class ReviewsController {
 
   @Get()
   findAll(@Query() query: Record<string, any>) {
-    return this.reviewsService.findAll(query);
+    return {
+      data: [],
+      meta: {
+        totalItems: 0,
+        itemCount: 0,
+        itemsPerPage: 10,
+        totalPages: 0,
+        currentPage: 1,
+      },
+    };
   }
 
   @Get(':id')
