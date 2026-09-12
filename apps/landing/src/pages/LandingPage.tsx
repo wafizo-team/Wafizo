@@ -799,7 +799,7 @@ export default function LandingPage() {
               Questions
             </a>
             <a
-              href="#"
+              href="https://app.wafizo.fr/login"
               className="wf-link wf-hide-mobile"
               style={{ fontSize: 14.5, color: t.inkSoft, textDecoration: 'none' }}
             >
@@ -1435,6 +1435,7 @@ export default function LandingPage() {
 
                   <button
                     className="wf-btn"
+                    onClick={() => (window.location.href = 'https://app.wafizo.fr/register')}
                     style={{
                       marginTop: 28,
                       width: '100%',
@@ -1608,6 +1609,7 @@ export default function LandingPage() {
             </p>
             <button
               className="wf-btn"
+              onClick={() => (window.location.href = 'https://app.wafizo.fr/register')}
               style={{
                 marginTop: 34,
                 background: t.accentBright,
@@ -1648,7 +1650,11 @@ export default function LandingPage() {
         >
           <span>© 2026 Wafizo</span>
           <div style={{ display: 'flex', gap: 24 }}>
-            <a href="#" className="wf-link" style={{ color: t.inkFaint, textDecoration: 'none' }}>
+            <a
+              href="https://app.wafizo.fr"
+              className="wf-link"
+              style={{ color: t.inkFaint, textDecoration: 'none' }}
+            >
               Ouvrir l'app
             </a>
             <a href="#" className="wf-link" style={{ color: t.inkFaint, textDecoration: 'none' }}>
