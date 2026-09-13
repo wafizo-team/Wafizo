@@ -88,7 +88,7 @@ export function useGenerateReply() {
 
 export function usePublishReply() {
   const queryClient = useQueryClient();
-  return useMutation({
+    return useMutation({
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
       apiClient.post<any>(`/reviews/${reviewId}/publish`, { content }),
     onSuccess: () => {
@@ -131,8 +131,8 @@ export function useSubscription() {
 }
 
 export function useCreateCheckout() {
-  return useMutation({
-    mutationFn: async (payload: any = {}) => {
+  return useMutation<any, Error, void | string | Record<string, any>>({
+    mutationFn: async (payload?: void | string | Record<string, any>) => {
       const body = typeof payload === 'string' ? { priceId: payload } : (payload || {});
       const res = await apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', body);
       return {
@@ -144,8 +144,8 @@ export function useCreateCheckout() {
 }
 
 export function useBillingPortal() {
-  return useMutation({
-    mutationFn: async (payload: any = {}) => {
+  return useMutation<any, Error, void | string | Record<string, any>>({
+    mutationFn: async (payload?: void | string | Record<string, any>) => {
       const body = typeof payload === 'string' ? { returnUrl: payload } : (payload || {});
       const res = await apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', body);
       return {
