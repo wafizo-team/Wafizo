@@ -25,7 +25,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
     const user = await this.authService.findOrCreateUser(req.user);
-    const { accessToken, refreshToken } = await this.authService.generateTokens(
+    const { accessToken, refreshToken } = this.authService.generateTokens(
       user.id,
       user.email,
     );

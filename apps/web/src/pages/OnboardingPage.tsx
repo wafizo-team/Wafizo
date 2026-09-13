@@ -1,40 +1,54 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useConnectBusiness } from '../lib/api/queries';
-import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '../components/ui/button';
+import { useConnectBusiness } from '@/lib/api/queries';
+import { Button } from '@/components/ui/button';
 
-export default function OnboardingPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const connectBusiness = useConnectBusiness();
+export function OnboardingPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const connectBusiness = useConnectBusiness();
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleConnect() {
+  const handleConnect = async () => {
     try {
-      setIsLoading(true);
+      setError(null);
       await connectBusiness.mutateAsync();
-      await queryClient.invalidateQueries({ queryKey: ['me'] });
-      void navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Failed to connect business:', error);
-    } finally {
-      setIsLoading(false);
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Une erreur est survenue lors de la connexion.';
+      setError(message);
     }
-  }
+  };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6 text-center">
-        <h1 className="text-2xl font-bold">Bienvenue sur Wafizo</h1>
-        <p className="text-muted-foreground">
-          Pour commencer à recevoir et répondre à vos avis, connectez votre fiche Google Business
-          Profile.
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-6 rounded-xl border bg-card p-8 shadow-sm text-center">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Bienvenue sur Wafizo
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Connectez votre compte pour commencer à gérer vos avis clients et
+          optimiser votre visibilité.
         </p>
-        <Button onClick={handleConnect} disabled={isLoading} className="w-full">
-          {isLoading ? 'Connexion en cours...' : 'Connecter ma fiche Google'}
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <Button
+          className="w-full"
+          disabled={connectBusiness.isPending}
+          onClick={() => {
+            void handleConnect();
+          }}
+        >
+          {connectBusiness.isPending
+            ? 'Connexion en cours...'
+            : 'Connecter mon établissement'}
         </Button>
       </div>
     </div>
   );
 }
+
+export default OnboardingPage;

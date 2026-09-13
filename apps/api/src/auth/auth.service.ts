@@ -39,9 +39,12 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshTokens(refreshToken: string) {
+  refreshTokens(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken);
+      const payload = this.jwtService.verify<{
+        userId: string;
+        email: string;
+      }>(refreshToken);
       return this.generateTokens(payload.userId, payload.email);
     } catch {
       throw new Error('Invalid refresh token');
