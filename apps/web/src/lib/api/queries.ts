@@ -84,7 +84,7 @@ export function useReviews(params?: {
 export function useConnectBusiness() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiClient.post<unknown, Record<string, unknown>>('/business/connect', {}),
+    mutationFn: () => apiClient.post<unknown>('/business/connect', {}),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
@@ -95,7 +95,7 @@ export function useGenerateReply() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId }: { reviewId: string }) =>
-      apiClient.post<unknown, Record<string, unknown>>(`/reviews/${reviewId}/generate`, {}),
+      apiClient.post<unknown>(`/reviews/${reviewId}/generate`, {}),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
@@ -106,7 +106,7 @@ export function usePublishReply() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
-      apiClient.post<unknown, { content: string }>(`/reviews/${reviewId}/publish`, { content }),
+      apiClient.post<unknown>(`/reviews/${reviewId}/publish`, { content }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
@@ -118,7 +118,7 @@ export function useUpdateReviewStatus() {
   return useMutation({
     mutationFn: ({ id, reviewId, status }: { id?: string; reviewId?: string; status: string }) => {
       const targetId = reviewId || id;
-      return apiClient.patch<unknown, { status: string }>(`/reviews/${targetId}/status`, { status });
+      return apiClient.patch<unknown>(`/reviews/${targetId}/status`, { status });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
@@ -129,10 +129,11 @@ export function useUpdateReviewStatus() {
 export function useCollectLink() {
   return useMutation({
     mutationFn: async () => {
-      const res = await apiClient.post<{ url: string; qrCodeSvg?: string; publicUrl?: string }, Record<string, unknown>>(
-        '/business/collect-link',
-        {}
-      );
+      const res = (await apiClient.post('/business/collect-link', {})) as {
+        url?: string;
+        qrCodeSvg?: string;
+        publicUrl?: string;
+      };
       return {
         url: res.url || '',
         qrCodeSvg: res.qrCodeSvg || '',
@@ -157,10 +158,10 @@ export function useCreateCheckout() {
   >({
     mutationFn: async (payload?: void | string | Record<string, unknown>) => {
       const body = typeof payload === 'string' ? { priceId: payload } : payload || {};
-      const res = await apiClient.post<{ url: string; checkoutUrl?: string }, Record<string, unknown>>(
-        '/billing/checkout',
-        body
-      );
+      const res = (await apiClient.post('/billing/checkout', body)) as {
+        url?: string;
+        checkoutUrl?: string;
+      };
       return {
         url: res.url || res.checkoutUrl || '',
         checkoutUrl: res.checkoutUrl || res.url || '',
@@ -177,10 +178,10 @@ export function useBillingPortal() {
   >({
     mutationFn: async (payload?: void | string | Record<string, unknown>) => {
       const body = typeof payload === 'string' ? { returnUrl: payload } : payload || {};
-      const res = await apiClient.post<{ url: string; portalUrl?: string }, Record<string, unknown>>(
-        '/billing/portal',
-        body
-      );
+      const res = (await apiClient.post('/billing/portal', body)) as {
+        url?: string;
+        portalUrl?: string;
+      };
       return {
         url: res.url || res.portalUrl || '',
         portalUrl: res.portalUrl || res.url || '',
