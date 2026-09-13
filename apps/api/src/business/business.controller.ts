@@ -1,4 +1,10 @@
-import { Controller, Post, Req, UseGuards, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Req,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BusinessService } from './business.service';
 
@@ -18,7 +24,7 @@ export class BusinessController {
   @Post('connect')
   async connectBusiness(@Req() req: RequestWithUser): Promise<unknown> {
     const userId = req.user.userId ?? req.user.sub ?? req.user.id ?? '';
-    
+
     if (!userId) {
       throw new UnauthorizedException('Utilisateur non authentifié');
     }

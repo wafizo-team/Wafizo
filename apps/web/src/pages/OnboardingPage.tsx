@@ -28,7 +28,8 @@ export default function OnboardingPage() {
       <div className="w-full max-w-md space-y-6 text-center">
         <h1 className="text-2xl font-bold">Bienvenue sur Wafizo</h1>
         <p className="text-muted-foreground">
-          Pour commencer à recevoir et répondre à vos avis, connectez votre fiche Google Business Profile.
+          Pour commencer à recevoir et répondre à vos avis, connectez votre fiche Google Business
+          Profile.
         </p>
         <Button onClick={handleConnect} disabled={isLoading} className="w-full">
           {isLoading ? 'Connexion en cours...' : 'Connecter ma fiche Google'}

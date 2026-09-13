@@ -56,7 +56,7 @@ export function useReviews(params?: {
 
       const queryString = searchParams.toString();
       const endpoint = queryString ? `/reviews?${queryString}` : '/reviews';
-      
+
       return apiClient.get<{
         data: any[];
         meta: { totalItems: number; page: number; limit: number; totalPages: number };
@@ -88,7 +88,7 @@ export function useGenerateReply() {
 
 export function usePublishReply() {
   const queryClient = useQueryClient();
-    return useMutation({
+  return useMutation({
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
       apiClient.post<any>(`/reviews/${reviewId}/publish`, { content }),
     onSuccess: () => {
@@ -113,7 +113,10 @@ export function useUpdateReviewStatus() {
 export function useCollectLink() {
   return useMutation({
     mutationFn: async () => {
-      const res = await apiClient.post<{ url: string; qrCodeSvg?: string; publicUrl?: string }>('/business/collect-link', {});
+      const res = await apiClient.post<{ url: string; qrCodeSvg?: string; publicUrl?: string }>(
+        '/business/collect-link',
+        {},
+      );
       return {
         url: res.url || '',
         qrCodeSvg: res.qrCodeSvg || '',
@@ -133,8 +136,11 @@ export function useSubscription() {
 export function useCreateCheckout() {
   return useMutation<any, Error, void | string | Record<string, any>>({
     mutationFn: async (payload?: void | string | Record<string, any>) => {
-      const body = typeof payload === 'string' ? { priceId: payload } : (payload || {});
-      const res = await apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', body);
+      const body = typeof payload === 'string' ? { priceId: payload } : payload || {};
+      const res = await apiClient.post<{ url: string; checkoutUrl?: string }>(
+        '/billing/checkout',
+        body,
+      );
       return {
         url: res.url || res.checkoutUrl || '',
         checkoutUrl: res.checkoutUrl || res.url || '',
@@ -146,8 +152,11 @@ export function useCreateCheckout() {
 export function useBillingPortal() {
   return useMutation<any, Error, void | string | Record<string, any>>({
     mutationFn: async (payload?: void | string | Record<string, any>) => {
-      const body = typeof payload === 'string' ? { returnUrl: payload } : (payload || {});
-      const res = await apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', body);
+      const body = typeof payload === 'string' ? { returnUrl: payload } : payload || {};
+      const res = await apiClient.post<{ url: string; portalUrl?: string }>(
+        '/billing/portal',
+        body,
+      );
       return {
         url: res.url || res.portalUrl || '',
         portalUrl: res.portalUrl || res.url || '',
