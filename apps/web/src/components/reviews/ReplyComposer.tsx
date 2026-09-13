@@ -1,4 +1,4 @@
-import { useState } from 'react';
+export default function ReplyComposer({ reviewId, initialReply, onSuccess }: ReplyComposerProps) {
 import { useGenerateReply, usePublishReply } from '../../lib/api/queries';
 import { Button } from '../ui/button';
 

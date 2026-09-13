@@ -1,7 +1,7 @@
 import { useSubscription, useCreateCheckout, useBillingPortal } from '../lib/api/queries';
-import { Button } from '../ui/button';
+import { Button } from '../components/ui/button';
 
-export function SubscriptionPage() {
+export default function SubscriptionPage() {
   const { data: subData, isLoading } = useSubscription();
   const createCheckout = useCreateCheckout();
   const billingPortal = useBillingPortal();

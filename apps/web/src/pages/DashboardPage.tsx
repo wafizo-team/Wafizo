@@ -1,10 +1,8 @@
 import { useReviews } from '../lib/api/queries';
-import { ReviewItem } from '../lib/api/queries';
+import type { ReviewItem } from '../lib/api/queries';
 import { useUpdateReviewStatus } from '../lib/api/queries';
 
-type ReviewStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
-
-export function DashboardPage() {
+export default function DashboardPage() {
   const { data: reviewsData, isLoading } = useReviews();
   const updateStatus = useUpdateReviewStatus();
 
