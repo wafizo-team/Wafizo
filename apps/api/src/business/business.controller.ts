@@ -2,17 +2,17 @@ import {
   Controller,
   Post,
   Req,
-  UseGuards,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { Request } from 'express';
 import { BusinessService } from './business.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-interface RequestWithUser {
+interface RequestWithUser extends Request {
   user: {
-    userId?: string;
-    id?: string;
-    sub?: string;
+    userId: string;
+    email?: string;
   };
 }
 
@@ -22,13 +22,11 @@ export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
   @Post('connect')
-  async connectBusiness(@Req() req: RequestWithUser): Promise<unknown> {
-    const userId = req.user.userId ?? req.user.sub ?? req.user.id ?? '';
-
+  async connectBusiness(@Req() req: RequestWithUser) {
+    const userId = req.user?.userId;
     if (!userId) {
-      throw new UnauthorizedException('Utilisateur non authentifié');
+      throw new UnauthorizedException('User ID missing from token');
     }
-
     return this.businessService.connectBusiness(userId);
   }
 }

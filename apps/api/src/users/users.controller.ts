@@ -1,20 +1,18 @@
 import {
   Controller,
   Get,
-  Patch,
-  Delete,
-  Body,
-  Request,
-  UseGuards,
+  Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
-import { UsersService, UpdateUserProfileDto } from './users.service';
+import type { Request } from 'express';
+import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-interface RequestWithUser {
+interface RequestWithUser extends Request {
   user: {
     userId: string;
-    email: string;
+    email?: string;
   };
 }
 
@@ -24,29 +22,11 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
-  getMe(@Request() req: RequestWithUser) {
+  getProfile(@Req() req: RequestWithUser) {
     const userId = req.user?.userId;
     if (!userId) {
-      throw new UnauthorizedException('Utilisateur non authentifié');
+      throw new UnauthorizedException('User ID missing from token');
     }
-    return this.usersService.findMe(userId);
-  }
-
-  @Patch('me')
-  updateMe(@Request() req: RequestWithUser, @Body() dto: UpdateUserProfileDto) {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new UnauthorizedException('Utilisateur non authentifié');
-    }
-    return this.usersService.updateMe(userId, dto);
-  }
-
-  @Delete('me')
-  deleteMe(@Request() req: RequestWithUser) {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new UnauthorizedException('Utilisateur non authentifié');
-    }
-    return this.usersService.deleteMe(userId);
+    return this.usersService.findOne(userId);
   }
 }

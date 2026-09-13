@@ -1,4 +1,12 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
@@ -35,5 +43,11 @@ export class AuthController {
     return res.redirect(
       `${frontendUrl}/auth/callback?token=${accessToken}&refresh=${refreshToken}`,
     );
+  }
+
+  @Public()
+  @Post('refresh')
+  refreshToken(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshTokens(refreshToken);
   }
 }
