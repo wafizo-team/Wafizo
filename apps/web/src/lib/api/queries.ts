@@ -4,15 +4,12 @@ import type {
   CheckoutResponse,
   BillingPortalResponse,
   ReviewStatus,
+  Business,
+  Review,
 } from '@wafizo/shared';
-
 import { apiClient } from './client';
 
-// Type local — reflète le vrai retour actuel de /auth/me
-// TODO(dette-technique): remplacer par le type Business de @wafizo/shared
-// une fois l'intégration Google My Business API implémentée côté back
-// (connectionStatus, googleLocationId, lastSyncAt, address).
-interface MeResponse {
+export interface MeResponse {
   id: string;
   email: string;
   name: string;
@@ -33,16 +30,8 @@ export function useMe() {
   const token = localStorage.getItem('token');
   return useQuery({
     queryKey: ['me'],
-    queryFn: () =>
-      apiClient.get<{
-        id: string;
-        email: string;
-        name: string;
-        createdAt: string;
-        business?: Business | null;
-      }>('/auth/me'),
-    enabled: !!token,
     queryFn: () => apiClient.get<MeResponse>('/auth/me'),
+    enabled: !!token,
   });
 }
 
@@ -72,14 +61,24 @@ export function useReviews(params?: {
       if (params?.page) {
         searchParams.append('page', params.page.toString());
       }
-      const queryStr = searchParams.toString();
+
+      const queryString = searchParams.toString();
+      const endpoint = queryString ? `/reviews?${queryString}` : '/reviews';
+      
       return apiClient.get<{
         data: Review[];
         meta: { totalItems: number; page: number; limit: number; totalPages: number };
-      }>(`/reviews${queryStr ? `?${queryStr}` : ''}`);
-      const query = searchParams.toString();
-      const res = await apiClient.get<any>(query ? `/reviews?${query}` : '/reviews');
-      return res;
+      }>(endpoint);
+    },
+  });
+}
+
+export function useConnectBusiness() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiClient.post<any>('/business/connect', {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }
@@ -90,66 +89,7 @@ export function useGenerateReply() {
     mutationFn: ({ reviewId }: { reviewId: string }) =>
       apiClient.post<any>(`/reviews/${reviewId}/generate`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
-  });
-}
-
-export function usePublishReply() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
-      apiClient.post<any>(`/reviews/${reviewId}/reply`, { content }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
-    },
-  });
-}
-
-export function useUpdateReviewStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) =>
-      apiClient.patch<any>(`/reviews/${id}/status`, { status }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reviews'] });
-    },
-  });
-}
-
-export function useNotificationPreferences() {
-  return useQuery({
-    queryKey: ['notification-preferences'],
-    queryFn: () => apiClient.get('/settings/notifications'),
-  });
-}
-
-export function useUpdateNotificationPreferences() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (preferences: any) => apiClient.put('/settings/notifications', preferences),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
-    },
-  });
-}
-
-export function useSubscription() {
-  return useQuery({
-    queryKey: ['subscription'],
-    queryFn: () => apiClient.get<SubscriptionResponse>('/subscription'),
-  });
-}
-
-export function useCreateCheckout() {
-  return useMutation({
-    mutationFn: (priceId: string) =>
-      apiClient.post<CheckoutResponse>('/subscription/checkout', { priceId }),
-  });
-}
-
-export function useBillingPortal() {
-  return useMutation({
-    mutationFn: () => apiClient.post<BillingPortalResponse>('/subscription/portal', {}),
   });
 }
