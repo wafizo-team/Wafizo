@@ -12,12 +12,14 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from './decorators/public.decorator';
+import { encrypt } from '../common/encryption.util';
 
 interface RequestWithUser extends Request {
   user: {
     email: string;
     name: string;
     googleId: string;
+    refreshToken?: string;
   };
 }
 
@@ -49,5 +51,29 @@ export class AuthController {
   @Post('refresh')
   refreshToken(@Body('refreshToken') refreshToken: string) {
     return this.authService.refreshTokens(refreshToken);
+  }
+
+  @Public()
+  @Get('google/business')
+  @UseGuards(AuthGuard('google-business'))
+  async googleBusinessAuth(@Req() req: RequestWithUser) {
+    // Redirige vers Google pour le scope business.manage
+  }
+
+  @Public()
+  @Get('google/business/callback')
+  @UseGuards(AuthGuard('google-business'))
+  async googleBusinessAuthCallback(@Req() req: RequestWithUser) {
+    const user = req.user;
+    
+    // Chiffrement sécurisé du refresh token Google Business
+    const encryptedRefreshToken = user.refreshToken ? encrypt(user.refreshToken) : null;
+
+    // TODO: Enregistrer encryptedRefreshToken en base via ton service
+    return {
+      message: 'Google Business connected and token encrypted successfully',
+      email: user.email,
+      hasRefreshToken: !!encryptedRefreshToken,
+    };
   }
 }
