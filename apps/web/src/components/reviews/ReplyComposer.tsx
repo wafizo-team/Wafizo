@@ -6,8 +6,8 @@ interface ReplyComposerProps {
   reviewId: string;
   initialReply?: string;
   onSuccess?: () => void;
+  onPublished?: () => void; // Ajout pour compatibilité
 }
-
 export default function ReplyComposer({ reviewId, initialReply, onSuccess }: ReplyComposerProps) {
   const [content, setContent] = useState(initialReply || '');
   const generateReply = useGenerateReply();
@@ -39,6 +39,7 @@ export default function ReplyComposer({ reviewId, initialReply, onSuccess }: Rep
             setContent(data.reply);
           }
           if (onSuccess) onSuccess();
+          if (onPublished) onPublished();
         },
       }
     );
