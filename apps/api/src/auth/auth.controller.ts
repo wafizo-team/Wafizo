@@ -56,18 +56,20 @@ export class AuthController {
   @Public()
   @Get('google/business')
   @UseGuards(AuthGuard('google-business'))
-  async googleBusinessAuth(@Req() req: RequestWithUser) {
+  googleBusinessAuth(@Req() _req: RequestWithUser) {
     // Redirige vers Google pour le scope business.manage
   }
 
   @Public()
   @Get('google/business/callback')
   @UseGuards(AuthGuard('google-business'))
-  async googleBusinessAuthCallback(@Req() req: RequestWithUser) {
+  googleBusinessAuthCallback(@Req() req: RequestWithUser) {
     const user = req.user;
-    
+
     // Chiffrement sécurisé du refresh token Google Business
-    const encryptedRefreshToken = user.refreshToken ? encrypt(user.refreshToken) : null;
+    const encryptedRefreshToken = user.refreshToken
+      ? encrypt(user.refreshToken)
+      : null;
 
     // TODO: Enregistrer encryptedRefreshToken en base via ton service
     return {
