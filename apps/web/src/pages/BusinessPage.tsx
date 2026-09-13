@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { useMe, useCollectLink } from '@/lib/api/queries';
 
 export function BusinessPage() {
   const { data: me, isLoading } = useMe();
   const collectLink = useCollectLink();
-  const [, setCopied] = useState(false);
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Chargement...</p>;

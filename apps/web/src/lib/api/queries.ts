@@ -84,7 +84,7 @@ export function useReviews(params?: {
 export function useConnectBusiness() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiClient.post<unknown>('/business/connect', {}),
+    mutationFn: () => apiClient.post('/business/connect', {}),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
@@ -95,7 +95,7 @@ export function useGenerateReply() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId }: { reviewId: string }) =>
-      apiClient.post<unknown>(`/reviews/${reviewId}/generate`, {}),
+      apiClient.post(`/reviews/${reviewId}/generate`, {}),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
@@ -106,7 +106,7 @@ export function usePublishReply() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
-      apiClient.post<unknown>(`/reviews/${reviewId}/publish`, { content }),
+      apiClient.post(`/reviews/${reviewId}/publish`, { content }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
@@ -118,7 +118,7 @@ export function useUpdateReviewStatus() {
   return useMutation({
     mutationFn: ({ id, reviewId, status }: { id?: string; reviewId?: string; status: string }) => {
       const targetId = reviewId || id;
-      return apiClient.patch<unknown>(`/reviews/${targetId}/status`, { status });
+      return apiClient.patch(`/reviews/${targetId}/status`, { status });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
@@ -129,11 +129,12 @@ export function useUpdateReviewStatus() {
 export function useCollectLink() {
   return useMutation({
     mutationFn: async () => {
-      const res = await apiClient.post('/business/collect-link', {});
+      const rawRes = await apiClient.post('/business/collect-link', {});
+      const res = (rawRes as Record<string, unknown>) || {};
       return {
-        url: res.url || '',
-        qrCodeSvg: res.qrCodeSvg || '',
-        publicUrl: res.publicUrl || res.url || '',
+        url: (res.url as string) || '',
+        qrCodeSvg: (res.qrCodeSvg as string) || '',
+        publicUrl: (res.publicUrl as string) || (res.url as string) || '',
       };
     },
   });
@@ -154,10 +155,11 @@ export function useCreateCheckout() {
   >({
     mutationFn: async (payload?: void | string | Record<string, unknown>) => {
       const body = typeof payload === 'string' ? { priceId: payload } : payload || {};
-      const res = await apiClient.post('/billing/checkout', body);
+      const rawRes = await apiClient.post('/billing/checkout', body);
+      const res = (rawRes as Record<string, unknown>) || {};
       return {
-        url: res.url || res.checkoutUrl || '',
-        checkoutUrl: res.checkoutUrl || res.url || '',
+        url: (res.url as string) || (res.checkoutUrl as string) || '',
+        checkoutUrl: (res.checkoutUrl as string) || (res.url as string) || '',
       };
     },
   });
@@ -171,10 +173,11 @@ export function useBillingPortal() {
   >({
     mutationFn: async (payload?: void | string | Record<string, unknown>) => {
       const body = typeof payload === 'string' ? { returnUrl: payload } : payload || {};
-      const res = await apiClient.post('/billing/portal', body);
+      const rawRes = await apiClient.post('/billing/portal', body);
+      const res = (rawRes as Record<string, unknown>) || {};
       return {
-        url: res.url || res.portalUrl || '',
-        portalUrl: res.portalUrl || res.url || '',
+        url: (res.url as string) || (res.portalUrl as string) || '',
+        portalUrl: (res.portalUrl as string) || (res.url as string) || '',
       };
     },
   });
