@@ -132,7 +132,7 @@ export function useSubscription() {
 
 export function useCreateCheckout() {
   return useMutation({
-    mutationFn: async (_?: void) => {
+    mutationFn: async () => {
       const res = await apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', {});
       return {
         url: res.url || res.checkoutUrl || '',
@@ -144,7 +144,7 @@ export function useCreateCheckout() {
 
 export function useBillingPortal() {
   return useMutation({
-    mutationFn: async (_?: void) => {
+    mutationFn: async () => {
       const res = await apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', {});
       return {
         url: res.url || res.portalUrl || '',
