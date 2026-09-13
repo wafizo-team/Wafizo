@@ -25,9 +25,15 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
     const user = await this.authService.findOrCreateUser(req.user);
-    const { accessToken, refreshToken } = await this.authService.generateTokens(user.id, user.email);
+    const { accessToken, refreshToken } = await this.authService.generateTokens(
+      user.id,
+      user.email,
+    );
 
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-    return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}&refresh=${refreshToken}`);
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    return res.redirect(
+      `${frontendUrl}/auth/callback?token=${accessToken}&refresh=${refreshToken}`,
+    );
   }
 }

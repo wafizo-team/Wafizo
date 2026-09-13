@@ -43,4 +43,4 @@
 
 - name: Afficher le statut Sealed Secrets
   debug:
-    msg: "{{ sealedsecrets_status.stdout }}"
+    msg: '{{ sealedsecrets_status.stdout }}'

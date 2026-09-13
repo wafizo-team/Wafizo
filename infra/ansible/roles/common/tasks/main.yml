@@ -45,25 +45,25 @@
 - name: Autoriser SSH
   ufw:
     rule: allow
-    port: "22"
+    port: '22'
     proto: tcp
 
 - name: Autoriser HTTP
   ufw:
     rule: allow
-    port: "80"
+    port: '80'
     proto: tcp
 
 - name: Autoriser HTTPS
   ufw:
     rule: allow
-    port: "443"
+    port: '443'
     proto: tcp
 
 - name: Autoriser API K3s
   ufw:
     rule: allow
-    port: "6443"
+    port: '6443'
     proto: tcp
 
 - name: Activer UFW
@@ -85,11 +85,11 @@
 # ─── Optimisations système ────────────────────────────────────────────────────
 - name: Configurer sysctl pour K3s
   sysctl:
-    name: "{{ item.key }}"
-    value: "{{ item.value }}"
+    name: '{{ item.key }}'
+    value: '{{ item.value }}'
     state: present
     reload: yes
   loop:
-    - { key: "net.ipv4.ip_forward", value: "1" }
-    - { key: "net.bridge.bridge-nf-call-iptables", value: "1" }
-    - { key: "vm.swappiness", value: "10" }
+    - { key: 'net.ipv4.ip_forward', value: '1' }
+    - { key: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+    - { key: 'vm.swappiness', value: '10' }

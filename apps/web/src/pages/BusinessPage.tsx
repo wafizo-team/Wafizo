@@ -22,7 +22,8 @@ export function BusinessPage() {
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-2">Connectez votre établissement</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Liez votre compte Google Business Profile pour synchroniser vos avis et gérer vos réponses.
+            Liez votre compte Google Business Profile pour synchroniser vos avis et gérer vos
+            réponses.
           </p>
           <button
             onClick={() => {

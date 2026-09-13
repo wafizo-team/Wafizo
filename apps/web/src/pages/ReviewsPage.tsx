@@ -50,7 +50,9 @@ export function ReviewsPage() {
 
               {review.reply ? (
                 <div className="rounded-md bg-muted p-4 text-sm">
-                  <p className="font-medium text-xs text-muted-foreground mb-1">Réponse publiée :</p>
+                  <p className="font-medium text-xs text-muted-foreground mb-1">
+                    Réponse publiée :
+                  </p>
                   <p>{review.reply}</p>
                 </div>
               ) : (

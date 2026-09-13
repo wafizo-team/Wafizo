@@ -1,13 +1,13 @@
 ---
 - name: Provisioning Wafizo
   hosts: wafizo
-  become: true  # équivalent sudo — nécessaire pour installer des paquets
+  become: true # équivalent sudo — nécessaire pour installer des paquets
 
   roles:
-    - common         # 1. Base système : updates, fail2ban, sysctl
-    - k3s            # 2. Installation K3s single-node
+    - common # 1. Base système : updates, fail2ban, sysctl
+    - k3s # 2. Installation K3s single-node
     - sealed-secrets # 3. Secrets chiffrés (avant les apps qui en ont besoin)
-    - traefik        # 4. Ingress controller
-    - cert-manager   # 5. Certificats HTTPS Let's Encrypt
-    - monitoring     # 6. Prometheus + Grafana + Loki
-    - backup         # 7. Backups PostgreSQL quotidiens (2 heure du matin)
+    - traefik # 4. Ingress controller
+    - cert-manager # 5. Certificats HTTPS Let's Encrypt
+    - monitoring # 6. Prometheus + Grafana + Loki
+    - backup # 7. Backups PostgreSQL quotidiens (2 heure du matin)

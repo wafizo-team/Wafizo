@@ -37,4 +37,4 @@
 
 - name: Afficher le statut Traefik
   debug:
-    msg: "{{ traefik_status.stdout }}"
+    msg: '{{ traefik_status.stdout }}'
