@@ -8,6 +8,12 @@ export interface GoogleUser {
   googleId: string;
 }
 
+interface JwtPayload {
+  userId: string;
+  email: string;
+  sub: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,10 +47,7 @@ export class AuthService {
 
   refreshTokens(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify<{
-        userId: string;
-        email: string;
-      }>(refreshToken);
+      const payload = this.jwtService.verify<JwtPayload>(refreshToken);
       return this.generateTokens(payload.userId, payload.email);
     } catch {
       throw new Error('Invalid refresh token');
