@@ -132,8 +132,9 @@ export function useSubscription() {
 
 export function useCreateCheckout() {
   return useMutation({
-    mutationFn: async () => {
-      const res = await apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', {});
+    mutationFn: async (payload?: any) => {
+      const body = typeof payload === 'string' ? { priceId: payload } : (payload || {});
+      const res = await apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', body);
       return {
         url: res.url || res.checkoutUrl || '',
         checkoutUrl: res.checkoutUrl || res.url || '',
@@ -144,8 +145,9 @@ export function useCreateCheckout() {
 
 export function useBillingPortal() {
   return useMutation({
-    mutationFn: async () => {
-      const res = await apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', {});
+    mutationFn: async (payload?: any) => {
+      const body = typeof payload === 'string' ? { returnUrl: payload } : (payload || {});
+      const res = await apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', body);
       return {
         url: res.url || res.portalUrl || '',
         portalUrl: res.portalUrl || res.url || '',
