@@ -112,7 +112,14 @@ export function useUpdateReviewStatus() {
 
 export function useCollectLink() {
   return useMutation({
-    mutationFn: () => apiClient.post<{ url: string; qrCodeSvg?: string; publicUrl?: string }>('/business/collect-link', {}),
+    mutationFn: async () => {
+      const res = await apiClient.post<{ url: string; qrCodeSvg?: string; publicUrl?: string }>('/business/collect-link', {});
+      return {
+        url: res.url || '',
+        qrCodeSvg: res.qrCodeSvg || '',
+        publicUrl: res.publicUrl || res.url || '',
+      };
+    },
   });
 }
 
@@ -125,12 +132,24 @@ export function useSubscription() {
 
 export function useCreateCheckout() {
   return useMutation({
-    mutationFn: () => apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', {}),
+    mutationFn: async (_?: void) => {
+      const res = await apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', {});
+      return {
+        url: res.url || res.checkoutUrl || '',
+        checkoutUrl: res.checkoutUrl || res.url || '',
+      };
+    },
   });
 }
 
 export function useBillingPortal() {
   return useMutation({
-    mutationFn: () => apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', {}),
+    mutationFn: async (_?: void) => {
+      const res = await apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', {});
+      return {
+        url: res.url || res.portalUrl || '',
+        portalUrl: res.portalUrl || res.url || '',
+      };
+    },
   });
 }
