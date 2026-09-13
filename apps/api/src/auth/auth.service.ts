@@ -24,7 +24,7 @@ export class AuthService {
     const name = `${firstName} ${lastName}`.trim() || 'Google User';
 
     let user = await this.prisma.user.findUnique({ where: { email } });
-    
+
     if (!user) {
       user = await this.prisma.user.create({
         data: {
@@ -61,17 +61,19 @@ export class AuthService {
     try {
       const payload = this.jwtService.verify(refreshToken);
       const userId = payload.sub || payload.userId;
-}
+
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
         throw new UnauthorizedException('Utilisateur non trouvé');
       }
 
       return this.generateTokens({ id: user.id, email: user.email });
-    } catch (error) {
+    } catch (error: any) {
       throw new UnauthorizedException('Refresh token invalide ou expiré');
-}
-  async findUserById(id: string) {
+    }
+  }
+
+  async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
       select: {
@@ -88,7 +90,7 @@ export class AuthService {
               select: {
                 id: true,
                 type: true,
-                externalId: true,
+                externalID: true,
               },
             },
           },
