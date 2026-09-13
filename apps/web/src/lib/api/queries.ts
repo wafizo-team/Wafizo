@@ -111,7 +111,7 @@ export function useUpdateReviewStatus() {
 export function useCollectLink() {
   return useQuery({
     queryKey: ['collect-link'],
-    queryFn: () => apiClient.get<{ url: string }>('/business/collect-link'),
+    queryFn: () => apiClient.get<{ url: string; qrCodeSvg?: string; publicUrl?: string }>('/business/collect-link'),
   });
 }
 
@@ -124,12 +124,12 @@ export function useSubscription() {
 
 export function useCreateCheckout() {
   return useMutation({
-    mutationFn: () => apiClient.post<{ url: string }>('/billing/checkout', {}),
+    mutationFn: () => apiClient.post<{ url: string; checkoutUrl?: string }>('/billing/checkout', {}),
   });
 }
 
 export function useBillingPortal() {
   return useMutation({
-    mutationFn: () => apiClient.post<{ url: string }>('/billing/portal', {}),
+    mutationFn: () => apiClient.post<{ url: string; portalUrl?: string }>('/billing/portal', {}),
   });
 }
