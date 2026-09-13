@@ -100,8 +100,10 @@ export function usePublishReply() {
 export function useUpdateReviewStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ reviewId, status }: { reviewId: string; status: string }) =>
-      apiClient.patch<any>(`/reviews/${reviewId}/status`, { status }),
+    mutationFn: ({ id, reviewId, status }: { id?: string; reviewId?: string; status: string }) => {
+      const targetId = reviewId || id;
+      return apiClient.patch<any>(`/reviews/${targetId}/status`, { status });
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
@@ -109,9 +111,8 @@ export function useUpdateReviewStatus() {
 }
 
 export function useCollectLink() {
-  return useQuery({
-    queryKey: ['collect-link'],
-    queryFn: () => apiClient.get<{ url: string; qrCodeSvg?: string; publicUrl?: string }>('/business/collect-link'),
+  return useMutation({
+    mutationFn: () => apiClient.post<{ url: string; qrCodeSvg?: string; publicUrl?: string }>('/business/collect-link', {}),
   });
 }
 
