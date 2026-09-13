@@ -1,22 +1,16 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  HttpCode,
-  HttpStatus,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import type { Request, Response } from 'express';
-import { AuthService, GoogleUser } from './auth.service';
+import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 import { Public } from './decorators/public.decorator';
 
 interface RequestWithUser extends Request {
-  user: GoogleUser & { id?: string; googleId?: string };
+  user: {
+    email: string;
+    name: string;
+    googleId: string;
+  };
 }
 
 @Controller('auth')
@@ -27,35 +21,13 @@ export class AuthController {
   ) {}
 
   @Public()
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  googleAuth() {}
-
-  @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
     const user = await this.authService.findOrCreateUser(req.user);
-    const { accessToken, refreshToken } = await this.authService.generateTokens(
-      {
-        id: user.id,
-        email: user.email,
-      },
-    );
-    const frontendUrl = this.configService.get<string>(
-      'FRONTEND_URL',
-      'http://localhost:5173',
-    );
-    const redirectUrl = new URL('/auth/callback', frontendUrl);
-    redirectUrl.searchParams.set('accessToken', accessToken);
-    redirectUrl.searchParams.set('refreshToken', refreshToken);
-    return res.redirect(redirectUrl.toString());
-  }
+    const { accessToken, refreshToken } = await this.authService.generateTokens(user.id, user.email);
 
-  @Public()
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  async refreshTokens(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshTokens(refreshToken);
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}&refresh=${refreshToken}`);
   }
 }
