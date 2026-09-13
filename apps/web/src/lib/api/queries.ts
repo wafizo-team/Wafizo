@@ -129,11 +129,7 @@ export function useUpdateReviewStatus() {
 export function useCollectLink() {
   return useMutation({
     mutationFn: async () => {
-      const res = (await apiClient.post('/business/collect-link', {})) as {
-        url?: string;
-        qrCodeSvg?: string;
-        publicUrl?: string;
-      };
+      const res = await apiClient.post('/business/collect-link', {});
       return {
         url: res.url || '',
         qrCodeSvg: res.qrCodeSvg || '',
@@ -158,10 +154,7 @@ export function useCreateCheckout() {
   >({
     mutationFn: async (payload?: void | string | Record<string, unknown>) => {
       const body = typeof payload === 'string' ? { priceId: payload } : payload || {};
-      const res = (await apiClient.post('/billing/checkout', body)) as {
-        url?: string;
-        checkoutUrl?: string;
-      };
+      const res = await apiClient.post('/billing/checkout', body);
       return {
         url: res.url || res.checkoutUrl || '',
         checkoutUrl: res.checkoutUrl || res.url || '',
@@ -178,10 +171,7 @@ export function useBillingPortal() {
   >({
     mutationFn: async (payload?: void | string | Record<string, unknown>) => {
       const body = typeof payload === 'string' ? { returnUrl: payload } : payload || {};
-      const res = (await apiClient.post('/billing/portal', body)) as {
-        url?: string;
-        portalUrl?: string;
-      };
+      const res = await apiClient.post('/billing/portal', body);
       return {
         url: res.url || res.portalUrl || '',
         portalUrl: res.portalUrl || res.url || '',

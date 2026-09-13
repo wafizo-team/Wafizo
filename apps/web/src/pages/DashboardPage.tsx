@@ -18,7 +18,9 @@ export default function DashboardPage() {
     published: reviews.filter((r: ReviewItem) => r.status === 'PUBLISHED').length,
     averageRating:
       reviews.length > 0
-        ? (reviews.reduce((acc: number, r: ReviewItem) => acc + r.rating, 0) / reviews.length).toFixed(1)
+        ? (
+            reviews.reduce((acc: number, r: ReviewItem) => acc + r.rating, 0) / reviews.length
+          ).toFixed(1)
         : '0.0',
   };
 
@@ -35,7 +37,7 @@ export default function DashboardPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Tableau de bord</h1>
-      
+
       <div className="grid grid-cols-4 gap-4">
         <div className="p-4 bg-white rounded shadow">
           <p className="text-gray-500">Total avis</p>

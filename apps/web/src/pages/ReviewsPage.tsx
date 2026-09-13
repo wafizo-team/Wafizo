@@ -1,45 +1,64 @@
 import { useState } from 'react';
 import { useReviews } from '@/lib/api/queries';
-import ReviewCard from '@/components/reviews/ReviewCard';
+import type { ReviewItem } from '@/lib/api/queries';
+import ReplyComposer from '@/components/reviews/ReplyComposer';
 
 export function ReviewsPage() {
   const [search, setSearch] = useState('');
-  const { data, isLoading, isError } = useReviews({ search });
+  const { data: reviewsData, isLoading } = useReviews({ search });
 
-  if (isLoading) {
-    return <div className="p-8 text-center">Chargement des avis...</div>;
-  }
-
-  if (isError) {
-    return <div className="p-8 text-center text-red-500">Erreur lors du chargement des avis.</div>;
-  }
+  const reviews = reviewsData?.data || [];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Avis</h1>
+    <div className="max-w-4xl space-y-6 p-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Avis clients</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Consultez et répondez aux avis reçus sur vos établissements.
+        </p>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-4">
         <input
           type="text"
-          placeholder="Rechercher dans les avis..."
           value={search}
-          onChange={(e: any) => setSearch(e.target.value)}
-          className="max-w-sm flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+          placeholder="Rechercher un avis..."
+          className="w-full max-w-sm rounded-md border px-3 py-2 text-sm"
         />
       </div>
 
-      {data && data.data.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          Aucun avis trouvé pour le moment.
-        </div>
-      )}
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Chargement des avis...</p>
+      ) : reviews.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun avis trouvé.</p>
+      ) : (
+        <div className="space-y-4">
+          {reviews.map((review: ReviewItem) => (
+            <div key={review.id} className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">{review.authorName || 'Client anonyme'}</p>
+                  <p className="text-sm text-yellow-500">Note : {review.rating} / 5</p>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {review.publishedAt ? new Date(review.publishedAt).toLocaleDateString() : ''}
+                </span>
+              </div>
 
-      {data && data.data.length > 0 && (
-        <div className="grid gap-4">
-          {data.data.map((review: any) => (
-            <ReviewCard key={review.id} review={review} />
+              <p className="text-sm text-foreground">{review.comment || 'Aucun commentaire.'}</p>
+
+              {review.reply ? (
+                <div className="rounded-md bg-muted p-4 text-sm">
+                  <p className="font-medium text-xs text-muted-foreground mb-1">Réponse publiée :</p>
+                  <p>{review.reply}</p>
+                </div>
+              ) : (
+                <div className="pt-2">
+                  <ReplyComposer reviewId={review.id} initialReply={review.reply} />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}
