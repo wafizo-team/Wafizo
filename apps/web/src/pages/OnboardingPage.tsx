@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useConnectBusiness } from '@lib/api/queries';
+import { useConnectBusiness } from '../lib/api/queries';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '@components/ui/button';
+import { Button } from '../components/ui/button';
 
 export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,9 +33,6 @@ export default function OnboardingPage() {
         <Button onClick={handleConnect} disabled={isLoading} className="w-full">
           {isLoading ? 'Connexion en cours...' : 'Connecter ma fiche Google'}
         </Button>
-        <p className="text-xs text-muted-foreground">
-          Vous pourrez déconnecter votre fiche à tout moment depuis les paramètres.
-        </p>
       </div>
     </div>
   );

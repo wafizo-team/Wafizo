@@ -1,12 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type {
-  SubscriptionResponse,
-  CheckoutResponse,
-  BillingPortalResponse,
-  ReviewStatus,
-  Business,
-  Review,
-} from '@wafizo/shared';
 import { apiClient } from './client';
 
 export interface MeResponse {
@@ -66,7 +58,7 @@ export function useReviews(params?: {
       const endpoint = queryString ? `/reviews?${queryString}` : '/reviews';
       
       return apiClient.get<{
-        data: Review[];
+        data: any[];
         meta: { totalItems: number; page: number; limit: number; totalPages: number };
       }>(endpoint);
     },
@@ -91,5 +83,53 @@ export function useGenerateReply() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },
+  });
+}
+
+export function usePublishReply() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ reviewId, content }: { reviewId: string; content: string }) =>
+      apiClient.post<any>(`/reviews/${reviewId}/publish`, { content }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+  });
+}
+
+export function useUpdateReviewStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ reviewId, status }: { reviewId: string; status: string }) =>
+      apiClient.patch<any>(`/reviews/${reviewId}/status`, { status }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+  });
+}
+
+export function useCollectLink() {
+  return useQuery({
+    queryKey: ['collect-link'],
+    queryFn: () => apiClient.get<{ url: string }>('/business/collect-link'),
+  });
+}
+
+export function useSubscription() {
+  return useQuery({
+    queryKey: ['subscription'],
+    queryFn: () => apiClient.get<any>('/billing/subscription'),
+  });
+}
+
+export function useCreateCheckout() {
+  return useMutation({
+    mutationFn: () => apiClient.post<{ url: string }>('/billing/checkout', {}),
+  });
+}
+
+export function useBillingPortal() {
+  return useMutation({
+    mutationFn: () => apiClient.post<{ url: string }>('/billing/portal', {}),
   });
 }
