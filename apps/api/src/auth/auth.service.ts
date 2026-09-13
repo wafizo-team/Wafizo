@@ -90,7 +90,7 @@ export class AuthService {
               select: {
                 id: true,
                 type: true,
-                externalID: true,
+                externalId: true,
               },
             },
           },
