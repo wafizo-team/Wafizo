@@ -33,7 +33,6 @@ export function useMe() {
   const token = localStorage.getItem('token');
   return useQuery({
     queryKey: ['me'],
-<<<<<<< HEAD
     queryFn: () =>
       apiClient.get<{
         id: string;
@@ -43,9 +42,7 @@ export function useMe() {
         business?: Business | null;
       }>('/auth/me'),
     enabled: !!token,
-=======
     queryFn: () => apiClient.get<MeResponse>('/auth/me'),
->>>>>>> origin/main
   });
 }
 
