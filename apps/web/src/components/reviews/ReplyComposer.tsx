@@ -1,4 +1,4 @@
-export default function ReplyComposer({ reviewId, initialReply, onSuccess }: ReplyComposerProps) {
+import { useState } from 'react';
 import { useGenerateReply, usePublishReply } from '../../lib/api/queries';
 import { Button } from '../ui/button';
 
@@ -8,7 +8,7 @@ interface ReplyComposerProps {
   onSuccess?: () => void;
 }
 
-export function ReplyComposer({ reviewId, initialReply, onSuccess }: ReplyComposerProps) {
+export default function ReplyComposer({ reviewId, initialReply, onSuccess }: ReplyComposerProps) {
   const [content, setContent] = useState(initialReply || '');
   const generateReply = useGenerateReply();
   const publishReply = usePublishReply();
