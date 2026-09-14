@@ -4,10 +4,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { decrypt } from '../common/encryption.util';
 import axios, { AxiosResponse } from 'axios';
 
-interface GoogleTokenRecord {
-  refreshToken: string;
-}
-
 interface TokenResponseData {
   access_token: string;
 }
@@ -41,16 +37,6 @@ interface ReviewsResponseData {
   nextPageToken?: string;
 }
 
-interface BusinessRecord {
-  id: string;
-  userId: string;
-  name: string;
-  slug: string;
-  googleLocationId?: string | null;
-  connectionStatus?: string;
-  source?: string;
-}
-
 @Injectable()
 export class BusinessService {
   constructor(
@@ -59,15 +45,7 @@ export class BusinessService {
   ) {}
 
   async getValidAccessToken(userId: string): Promise<string> {
-    const prismaClient = this.prisma as unknown as {
-      googleToken: {
-        findUnique(args: {
-          where: { userId: string };
-        }): Promise<GoogleTokenRecord | null>;
-      };
-    };
-
-    const googleToken = await prismaClient.googleToken.findUnique({
+    const googleToken = await this.prisma.googleTokens.findUnique({
       where: { userId },
     });
 
@@ -76,7 +54,6 @@ export class BusinessService {
     }
 
     const refreshToken = decrypt(googleToken.refreshToken);
-
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = this.configService.get<string>('GOOGLE_CLIENT_SECRET');
 
@@ -93,7 +70,6 @@ export class BusinessService {
           },
         },
       );
-
       return tokenResponse.data.access_token;
     } catch {
       throw new UnauthorizedException('Failed to refresh Google access token.');
@@ -104,44 +80,27 @@ export class BusinessService {
     userId: string,
     googleLocationId: string,
   ): Promise<unknown> {
-    const prismaClient = this.prisma as unknown as {
-      business: {
-        findFirst(args: {
-          where: { userId: string };
-        }): Promise<BusinessRecord | null>;
-        create(args: {
-          data: Record<string, unknown>;
-        }): Promise<BusinessRecord>;
-        update(args: {
-          where: { id: string };
-          data: Record<string, unknown>;
-        }): Promise<BusinessRecord>;
-      };
-    };
-
-    const existing = await prismaClient.business.findFirst({
+    const existing = await this.prisma.business.findFirst({
       where: { userId },
     });
 
     if (existing) {
-      return prismaClient.business.update({
+      return this.prisma.business.update({
         where: { id: existing.id },
         data: {
           googleLocationId,
           connectionStatus: 'CONNECTED',
-          source: 'GOOGLE',
         },
       });
     }
 
-    return prismaClient.business.create({
+    return this.prisma.business.create({
       data: {
         name: 'Mon Établissement',
         slug: `business-${userId}-${Date.now()}`,
         userId,
         googleLocationId,
         connectionStatus: 'CONNECTED',
-        source: 'GOOGLE',
       },
     });
   }
@@ -180,15 +139,9 @@ export class BusinessService {
   }
 
   async getGoogleReviews(userId: string): Promise<unknown> {
-    const prismaClient = this.prisma as unknown as {
-      business: {
-        findFirst(args: {
-          where: { userId: string };
-        }): Promise<BusinessRecord | null>;
-      };
-    };
+    const accessToken = await this.getValidAccessToken(userId);
 
-    const business = await prismaClient.business.findFirst({
+    const business = await this.prisma.business.findFirst({
       where: { userId },
     });
 
@@ -198,7 +151,6 @@ export class BusinessService {
       );
     }
 
-    const accessToken = await this.getValidAccessToken(userId);
     const locationPath = business.googleLocationId;
 
     try {
