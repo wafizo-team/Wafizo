@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
   Req,
   Res,
   UseGuards,
@@ -36,10 +34,12 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
     const user = await this.authService.findOrCreateUser(req.user);
-    const { accessToken, refreshToken } = await this.authService.generateTokens({
-      id: user.id,
-      email: user.email,
-    });
+    const { accessToken, refreshToken } = await this.authService.generateTokens(
+      {
+        id: user.id,
+        email: user.email,
+      },
+    );
 
     const frontendUrl =
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
@@ -66,7 +66,10 @@ export class AuthController {
       : null;
 
     if (encryptedRefreshToken) {
-      await this.authService.saveGoogleBusinessToken(user.id, encryptedRefreshToken);
+      await this.authService.saveGoogleBusinessToken(
+        user.id,
+        encryptedRefreshToken,
+      );
     }
 
     return {
