@@ -5,7 +5,7 @@ import { Request } from 'express';
 
 interface AuthenticatedRequest extends Request {
   user: {
-    id: string;
+    userId: string;
   };
 }
 
@@ -16,7 +16,7 @@ export class BusinessController {
   @Get('google-locations')
   @UseGuards(AuthGuard('jwt'))
   async getGoogleLocations(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.businessService.getGoogleLocations(userId);
   }
 
@@ -26,14 +26,14 @@ export class BusinessController {
     @Req() req: AuthenticatedRequest,
     @Body('googleLocationId') googleLocationId: string,
   ): Promise<unknown> {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.businessService.connectBusiness(userId, googleLocationId);
   }
 
   @Get('reviews')
   @UseGuards(AuthGuard('jwt'))
   async getGoogleReviews(@Req() req: AuthenticatedRequest): Promise<unknown> {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.businessService.getGoogleReviews(userId);
   }
 }

@@ -16,6 +16,7 @@ import { encrypt } from '../common/encryption.util';
 
 interface RequestWithUser extends Request {
   user: {
+    id: string;
     email: string;
     name: string;
     googleId: string;
@@ -35,22 +36,16 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
     const user = await this.authService.findOrCreateUser(req.user);
-    const { accessToken, refreshToken } = this.authService.generateTokens(
-      user.id,
-      user.email,
-    );
+    const { accessToken, refreshToken } = await this.authService.generateTokens({
+      id: user.id,
+      email: user.email,
+    });
 
     const frontendUrl =
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
     return res.redirect(
-      `${frontendUrl}/auth/callback?token=${accessToken}&refresh=${refreshToken}`,
+      `${frontendUrl}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
-  }
-
-  @Public()
-  @Post('refresh')
-  refreshToken(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshTokens(refreshToken);
   }
 
   @Public()
@@ -63,15 +58,17 @@ export class AuthController {
   @Public()
   @Get('google/business/callback')
   @UseGuards(AuthGuard('google-business'))
-  googleBusinessAuthCallback(@Req() req: RequestWithUser) {
+  async googleBusinessAuthCallback(@Req() req: RequestWithUser) {
     const user = req.user;
 
-    // Chiffrement sécurisé du refresh token Google Business
     const encryptedRefreshToken = user.refreshToken
       ? encrypt(user.refreshToken)
       : null;
 
-    // TODO: Enregistrer encryptedRefreshToken en base via ton service
+    if (encryptedRefreshToken) {
+      await this.authService.saveGoogleBusinessToken(user.id, encryptedRefreshToken);
+    }
+
     return {
       message: 'Google Business connected and token encrypted successfully',
       email: user.email,

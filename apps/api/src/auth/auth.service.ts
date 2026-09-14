@@ -38,19 +38,27 @@ export class AuthService {
     return user;
   }
 
-  generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, userId, email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+  async generateTokens(user: { id: string; email: string }) {
+    const payload = { sub: user.id, userId: user.id, email: user.email };
+    const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' });
+    const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '7d' });
     return { accessToken, refreshToken };
   }
 
-  refreshTokens(refreshToken: string) {
+  async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify<JwtPayload>(refreshToken);
-      return this.generateTokens(payload.userId, payload.email);
+      return this.generateTokens({ id: payload.userId, email: payload.email });
     } catch {
       throw new Error('Invalid refresh token');
     }
+  }
+
+  async saveGoogleBusinessToken(userId: string, encryptedToken: string) {
+    return this.prisma.googleTokens.upsert({
+      where: { userId },
+      create: { userId, refreshToken: encryptedToken },
+      update: { refreshToken: encryptedToken },
+    });
   }
 }
