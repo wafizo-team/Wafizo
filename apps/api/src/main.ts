@@ -10,7 +10,7 @@ async function bootstrap() {
     origin: [
       'https://app.wafizo.fr',
       'http://localhost:5173',
-      'http://192.168.100.22:5173',
+      'http://192.168.1.122:5173',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

@@ -65,4 +65,11 @@ export class AuthService {
       update: { refreshToken: encryptedToken },
     });
   }
+  async findUserById(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { businesses: { include: { sources: true } } },
+    });
+  }
 }
+

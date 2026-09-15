@@ -12,7 +12,7 @@ export function OnboardingPage() {
     try {
       setError(null);
       await connectBusiness.mutateAsync();
-      void navigate('/dashboard');
+      void navigate('/');
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Une erreur est survenue lors de la connexion.';

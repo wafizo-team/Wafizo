@@ -38,7 +38,7 @@ export interface ReviewsResponse {
 }
 
 export function useMe() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('wafizo_access_token');
   return useQuery({
     queryKey: ['me'],
     queryFn: () => apiClient.get<MeResponse>('/auth/me'),
