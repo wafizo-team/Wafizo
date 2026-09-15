@@ -1,23 +1,39 @@
-import { Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { BusinessService } from './business.service';
+import { Request } from 'express';
 
-interface RequestWithUser {
+interface AuthenticatedRequest extends Request {
   user: {
-    userId?: string;
-    id?: string;
-    sub?: string;
+    userId: string;
   };
 }
 
 @Controller('business')
-@UseGuards(JwtAuthGuard)
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
+  @Get('google-locations')
+  @UseGuards(AuthGuard('jwt'))
+  async getGoogleLocations(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    const userId = req.user.userId;
+    return this.businessService.getGoogleLocations(userId);
+  }
+
   @Post('connect')
-  async connectBusiness(@Req() req: RequestWithUser): Promise<unknown> {
-    const userId = req.user.userId ?? req.user.sub ?? req.user.id ?? '';
-    return this.businessService.connectBusiness(userId);
+  @UseGuards(AuthGuard('jwt'))
+  async connectBusiness(
+    @Req() req: AuthenticatedRequest,
+    @Body('googleLocationId') googleLocationId: string,
+  ): Promise<unknown> {
+    const userId = req.user.userId;
+    return this.businessService.connectBusiness(userId, googleLocationId);
+  }
+
+  @Get('reviews')
+  @UseGuards(AuthGuard('jwt'))
+  async getGoogleReviews(@Req() req: AuthenticatedRequest): Promise<unknown> {
+    const userId = req.user.userId;
+    return this.businessService.getGoogleReviews(userId);
   }
 }

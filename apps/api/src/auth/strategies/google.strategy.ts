@@ -17,23 +17,24 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   validate(
-    _req: any,
+    _req: unknown,
     accessToken: string,
     _refreshToken: string,
-
-    profile: any,
+    profile: {
+      name?: { givenName?: string; familyName?: string };
+      emails?: Array<{ value: string }>;
+      photos?: Array<{ value: string }>;
+    },
     done: VerifyCallback,
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { name, emails, photos } = profile;
     const user = {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
       email: emails?.[0]?.value,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+
       firstName: name?.givenName,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+
       lastName: name?.familyName,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+
       picture: photos?.[0]?.value,
       accessToken,
     };

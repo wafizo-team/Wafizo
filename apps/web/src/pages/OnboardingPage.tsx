@@ -1,39 +1,45 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useConnectBusiness } from '@/lib/api/queries';
-import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 
-function OnboardingPage() {
-  const connectBusiness = useConnectBusiness();
+export function OnboardingPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const connectBusiness = useConnectBusiness();
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleConnect() {
-    await connectBusiness.mutateAsync();
-    await queryClient.invalidateQueries({ queryKey: ['me'] });
-    void navigate('/', { replace: true });
-  }
+  const handleConnect = async () => {
+    try {
+      setError(null);
+      await connectBusiness.mutateAsync();
+      void navigate('/');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Une erreur est survenue lors de la connexion.';
+      setError(message);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <div className="w-full max-w-md rounded-xl border bg-card p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-bold">Bienvenue sur Wafizo</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Pour commencer à recevoir et répondre à vos avis, connectez votre fiche Google Business
-          Profile.
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-6 rounded-xl border bg-card p-8 shadow-sm text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Bienvenue sur Wafizo</h1>
+        <p className="text-sm text-muted-foreground">
+          Connectez votre compte pour commencer à gérer vos avis clients et optimiser votre
+          visibilité.
         </p>
 
-        <button
-          type="button"
-          onClick={() => void handleConnect()}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <Button
+          className="w-full"
           disabled={connectBusiness.isPending}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          onClick={() => {
+            void handleConnect();
+          }}
         >
-          {connectBusiness.isPending ? 'Connexion...' : 'Connecter ma fiche Google'}
-        </button>
-
-        <p className="mt-4 text-xs text-muted-foreground">
-          Vous pourrez déconnecter votre fiche à tout moment depuis les paramètres.
-        </p>
+          {connectBusiness.isPending ? 'Connexion en cours...' : 'Connecter mon établissement'}
+        </Button>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ ignore:
       name: sigstore
       type: npm
   - package:
-      name: "@sigstore/core"
+      name: '@sigstore/core'
       type: npm
   - package:
       name: deepmerge-ts

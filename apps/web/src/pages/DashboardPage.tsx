@@ -1,129 +1,95 @@
-import { ReviewStatus } from '@wafizo/shared';
-import { Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useReviews } from '../lib/api/queries';
+import type { ReviewItem } from '../lib/api/queries';
+import { useUpdateReviewStatus } from '../lib/api/queries';
 
-import { useReviews } from '@/lib/api/queries';
-import ReviewStatusBadge from '@/components/reviews/ReviewStatusBadge';
+export default function DashboardPage() {
+  const { data: reviewsData, isLoading } = useReviews();
+  const updateStatus = useUpdateReviewStatus();
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+  if (isLoading) {
+    return <div className="p-6">Chargement du tableau de bord...</div>;
+  }
+
+  const reviews = reviewsData?.data || [];
+
+  const stats = {
+    total: reviews.length,
+    pending: reviews.filter((r: ReviewItem) => r.status === 'PENDING').length,
+    published: reviews.filter((r: ReviewItem) => r.status === 'PUBLISHED').length,
+    averageRating:
+      reviews.length > 0
+        ? (
+            reviews.reduce((acc: number, r: ReviewItem) => acc + r.rating, 0) / reviews.length
+          ).toFixed(1)
+        : '0.0',
+  };
+
+  const sortedReviews = [...reviews].sort((a: ReviewItem, b: ReviewItem) => {
+    const dateA = a.publishedAt || '';
+    const dateB = b.publishedAt || '';
+    return dateB.localeCompare(dateA);
   });
-}
 
-function DashboardPage() {
-  // ⚠️ Le contrat (packages/shared/dto.ts) n'a pas d'endpoint d'agrégation dédié
-  // (ex: GET /stats). On calcule les stats côté client à partir de la liste complète
-  // des avis. Ça fonctionne pour un petit volume, mais ne passera pas à l'échelle —
-  // à remonter au back pour un vrai endpoint d'agrégation avant la mise en prod.
-  const { data, isLoading, isError } = useReviews({ page: 1, limit: 100 });
-
-  const reviews = data?.data ?? [];
-  const totalReviews = data?.meta.totalItems ?? 0;
-  const pendingCount = reviews.filter((r) => r.status === ReviewStatus.NEW).length;
-  const repliedCount = reviews.filter((r) => r.status === ReviewStatus.REPLIED).length;
-  const averageRating =
-    reviews.length > 0
-      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-      : '—';
-
-  const latestReviews = [...reviews]
-    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-    .slice(0, 5);
+  const handleStatusChange = (id: string, newStatus: string) => {
+    updateStatus.mutate({ reviewId: id, status: newStatus });
+  };
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Gérez vos avis clients depuis votre espace Wafizo.</p>
-      </div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Tableau de bord</h1>
 
-      {isError && (
-        <p className="mb-4 text-sm text-red-600">
-          Impossible de charger les statistiques. Réessayez plus tard.
-        </p>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Avis reçus</p>
-          <p className="mt-2 text-3xl font-bold">{isLoading ? '—' : totalReviews}</p>
+      <div className="grid grid-cols-4 gap-4">
+        <div className="p-4 bg-white rounded shadow">
+          <p className="text-gray-500">Total avis</p>
+          <p className="text-xl font-bold">{stats.total}</p>
         </div>
-
-        <div className="rounded-xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Avis à traiter</p>
-          <p className="mt-2 text-3xl font-bold">{isLoading ? '—' : pendingCount}</p>
+        <div className="p-4 bg-white rounded shadow">
+          <p className="text-gray-500">En attente</p>
+          <p className="text-xl font-bold">{stats.pending}</p>
         </div>
-
-        <div className="rounded-xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Note moyenne</p>
-          <p className="mt-2 text-3xl font-bold">{isLoading ? '—' : averageRating}</p>
+        <div className="p-4 bg-white rounded shadow">
+          <p className="text-gray-500">Publiés</p>
+          <p className="text-xl font-bold">{stats.published}</p>
         </div>
-
-        <div className="rounded-xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Réponses publiées</p>
-          <p className="mt-2 text-3xl font-bold">{isLoading ? '—' : repliedCount}</p>
+        <div className="p-4 bg-white rounded shadow">
+          <p className="text-gray-500">Note moyenne</p>
+          <p className="text-xl font-bold">{stats.averageRating}</p>
         </div>
       </div>
 
-      <section className="mt-8 rounded-xl border bg-card">
-        <div className="flex items-center justify-between border-b p-6">
-          <div>
-            <h2 className="font-semibold">Derniers avis</h2>
-            <p className="text-sm text-muted-foreground">
-              Les derniers avis reçus par votre établissement.
-            </p>
-          </div>
-          <Link to="/reviews" className="text-sm font-medium text-primary hover:underline">
-            Voir tout
-          </Link>
-        </div>
-
-        <div className="divide-y">
-          {isLoading && <p className="p-6 text-sm text-muted-foreground">Chargement...</p>}
-
-          {!isLoading && latestReviews.length === 0 && (
-            <p className="p-6 text-sm text-muted-foreground">
-              Aucun avis à afficher pour le moment.
-            </p>
-          )}
-
-          {latestReviews.map((review) => (
-            <div key={review.id} className="flex items-center justify-between gap-4 p-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="truncate font-medium">{review.authorName}</p>
-                  <div className="flex shrink-0 items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3.5 w-3.5 ${
-                          i < review.rating
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'fill-none text-muted-foreground'
-                        }`}
-                      />
-                    ))}
-                  </div>
+      <div className="bg-white rounded shadow p-4">
+        <h2 className="text-lg font-semibold mb-4">Avis récents</h2>
+        {sortedReviews.length === 0 ? (
+          <p className="text-gray-500">Aucun avis trouvé.</p>
+        ) : (
+          <div className="space-y-4">
+            {sortedReviews.slice(0, 5).map((review: ReviewItem) => (
+              <div key={review.id} className="border-b pb-4 flex justify-between items-start">
+                <div>
+                  <p className="font-semibold">{review.authorName || 'Anonyme'}</p>
+                  <p className="text-yellow-500">★ {review.rating}</p>
+                  <p className="text-gray-700 mt-1">{review.comment || 'Sans commentaire'}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {review.publishedAt ? new Date(review.publishedAt).toLocaleDateString() : ''}
+                  </p>
                 </div>
-                {review.comment && (
-                  <p className="truncate text-sm text-muted-foreground">{review.comment}</p>
-                )}
+                <div>
+                  <select
+                    value={review.status}
+                    onChange={(e) => handleStatusChange(review.id, e.target.value)}
+                    className="border rounded p-1 text-sm"
+                  >
+                    <option value="PENDING">En attente</option>
+                    <option value="APPROVED">Approuvé</option>
+                    <option value="REJECTED">Rejeté</option>
+                    <option value="PUBLISHED">Publié</option>
+                  </select>
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <span className="text-xs text-muted-foreground">
-                  {formatDate(review.publishedAt)}
-                </span>
-                <ReviewStatusBadge status={review.status} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-export default DashboardPage;

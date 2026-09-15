@@ -1,12 +1,29 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import type { Request, Response } from 'express';
-import { AuthService, GoogleUser } from './auth.service';
+import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 import { Public } from './decorators/public.decorator';
+import { encrypt } from '../common/encryption.util';
 
 interface RequestWithUser extends Request {
-  user: GoogleUser & { id?: string; googleId?: string };
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    googleId: string;
+    refreshToken?: string;
+  };
 }
 
 @Controller('auth')
@@ -26,23 +43,59 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
     const user = await this.authService.findOrCreateUser(req.user);
-    const { accessToken, refreshToken } = this.authService.generateTokens(
-      user.id,
-      user.email,
+    const { accessToken, refreshToken } = await this.authService.generateTokens(
+      {
+        id: user.id,
+        email: user.email,
+      },
     );
-    const frontendUrl = this.configService.get<string>(
-      'FRONTEND_URL',
-      'http://localhost:5173',
+
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    return res.redirect(
+      `${frontendUrl}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
-    const redirectUrl = new URL('/auth/callback', frontendUrl);
-    redirectUrl.searchParams.set('accessToken', accessToken);
-    redirectUrl.searchParams.set('refreshToken', refreshToken);
-    return res.redirect(redirectUrl.toString());
   }
 
+  @Public()
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshTokens(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshTokens(refreshToken);
+  }
+
+  @Public()
+  @Get('google/business')
+  @UseGuards(AuthGuard('google-business'))
+  googleBusinessAuth(@Req() _req: RequestWithUser) {
+    // Redirige vers Google pour le scope business.manage
+  }
+
+  @Public()
+  @Get('google/business/callback')
+  @UseGuards(AuthGuard('google-business'))
+  async googleBusinessAuthCallback(@Req() req: RequestWithUser) {
+    const user = req.user;
+
+    const encryptedRefreshToken = user.refreshToken
+      ? encrypt(user.refreshToken)
+      : null;
+
+    if (encryptedRefreshToken) {
+      await this.authService.saveGoogleBusinessToken(
+        user.id,
+        encryptedRefreshToken,
+      );
+    }
+
+    return {
+      message: 'Google Business connected and token encrypted successfully',
+      email: user.email,
+      hasRefreshToken: !!encryptedRefreshToken,
+    };
+  }
   @Get('me')
-  async getMe(@Req() req: Request) {
-    const user = req.user as { userId: string };
-    return this.authService.findUserById(user.userId);
+  async getMe(@Req() req: RequestWithUser & { user: { userId: string } }) {
+    return this.authService.findUserById(req.user.userId);
   }
 }

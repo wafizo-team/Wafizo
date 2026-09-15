@@ -1,90 +1,66 @@
 import { useState } from 'react';
-import { ReviewStatus, ReviewSort } from '@wafizo/shared';
-
 import { useReviews } from '@/lib/api/queries';
-import ReviewCard from '@/components/reviews/ReviewCard';
+import type { ReviewItem } from '@/lib/api/queries';
+import ReplyComposer from '@/components/reviews/ReplyComposer';
 
-const statusFilters: { label: string; value: ReviewStatus | 'ALL' }[] = [
-  { label: 'Tous', value: 'ALL' },
-  { label: 'Nouveaux', value: ReviewStatus.NEW },
-  { label: 'Répondus', value: ReviewStatus.REPLIED },
-  { label: 'Ignorés', value: ReviewStatus.IGNORED },
-];
-
-function ReviewsPage() {
-  const [statusFilter, setStatusFilter] = useState<ReviewStatus | 'ALL'>('ALL');
+export function ReviewsPage() {
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<ReviewSort>(ReviewSort.PUBLISHED_AT_DESC);
+  const { data: reviewsData, isLoading } = useReviews({ search });
 
-  const { data, isLoading, isError } = useReviews({
-    status: statusFilter === 'ALL' ? undefined : [statusFilter],
-    search: search.trim() || undefined,
-    sort,
-    page: 1,
-    limit: 50,
-  });
+  const reviews = reviewsData?.data || [];
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Avis</h1>
-        <p className="mt-2 text-muted-foreground">
-          Consultez et gérez les avis de votre établissement.
+    <div className="max-w-4xl space-y-6 p-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Avis clients</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Consultez et répondez aux avis reçus sur vos établissements.
         </p>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 rounded-lg border bg-card p-1">
-          {statusFilters.map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => setStatusFilter(f.value)}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                statusFilter === f.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
+      <div className="flex items-center gap-4">
         <input
           type="text"
-          placeholder="Rechercher un avis..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] rounded-lg border bg-card px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+          placeholder="Rechercher un avis..."
+          className="w-full max-w-sm rounded-md border px-3 py-2 text-sm"
         />
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as ReviewSort)}
-          className="rounded-lg border bg-card px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-        >
-          <option value={ReviewSort.PUBLISHED_AT_DESC}>Plus récents</option>
-          <option value={ReviewSort.PUBLISHED_AT_ASC}>Plus anciens</option>
-          <option value={ReviewSort.RATING_DESC}>Note décroissante</option>
-          <option value={ReviewSort.RATING_ASC}>Note croissante</option>
-        </select>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement...</p>}
-
-      {isError && (
-        <p className="text-sm text-red-600">Impossible de charger les avis. Réessayez plus tard.</p>
-      )}
-
-      {data && data.data.length === 0 && (
-        <p className="text-sm text-muted-foreground">Aucun avis ne correspond à ces critères.</p>
-      )}
-
-      {data && data.data.length > 0 && (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Chargement des avis...</p>
+      ) : reviews.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Aucun avis trouvé.</p>
+      ) : (
         <div className="space-y-4">
-          {data.data.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+          {reviews.map((review: ReviewItem) => (
+            <div key={review.id} className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">{review.authorName || 'Client anonyme'}</p>
+                  <p className="text-sm text-yellow-500">Note : {review.rating} / 5</p>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {review.publishedAt ? new Date(review.publishedAt).toLocaleDateString() : ''}
+                </span>
+              </div>
+
+              <p className="text-sm text-foreground">{review.comment || 'Aucun commentaire.'}</p>
+
+              {review.reply ? (
+                <div className="rounded-md bg-muted p-4 text-sm">
+                  <p className="font-medium text-xs text-muted-foreground mb-1">
+                    Réponse publiée :
+                  </p>
+                  <p>{review.reply}</p>
+                </div>
+              ) : (
+                <div className="pt-2">
+                  <ReplyComposer reviewId={review.id} initialReply={review.reply} />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}
