@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useConnectBusiness } from '@/lib/api/queries';
-import { Button } from '@/components/ui/button';
+import { useConnectBusiness } from '@lib/api/queries';
+import { Button } from '@components/ui/button';
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export function OnboardingPage() {
   const handleConnect = async () => {
     try {
       setError(null);
-      await connectBusiness.mutateAsync();
+      await connectBusiness.mutateAsync({ googleLocationId: 'test-location-id' });
       void navigate('/');
     } catch (err: unknown) {
       const message =
@@ -25,8 +25,7 @@ export function OnboardingPage() {
       <div className="w-full max-w-md space-y-6 rounded-xl border bg-card p-8 shadow-sm text-center">
         <h1 className="text-2xl font-bold tracking-tight">Bienvenue sur Wafizo</h1>
         <p className="text-sm text-muted-foreground">
-          Connectez votre compte pour commencer à gérer vos avis clients et optimiser votre
-          visibilité.
+          Connectez votre compte pour commencer à gérer vos avis clients et optimiser votre visibilité.
         </p>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

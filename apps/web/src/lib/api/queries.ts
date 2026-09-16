@@ -4,7 +4,7 @@ import { apiClient } from './client';
 export interface BusinessSource {
   id: string;
   type: string;
-  externalId: string;
+  externalID: string;
 }
 
 export interface Business {
@@ -84,7 +84,7 @@ export function useReviews(params?: {
 export function useConnectBusiness() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiClient.post('/business/connect', {}),
+    mutationFn: (data: { googleLocationId?: string }) => apiClient.post('/business/connect', data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },

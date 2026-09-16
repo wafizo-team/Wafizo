@@ -9,11 +9,11 @@ if (!root) {
 }
 
 async function enableMocking() {
-  return;
+  if (!import.meta.env.DEV) {
+    return;
+  }
   const { worker } = await import('./mocks/browser');
-  return worker.start({
-    onUnhandledRequest: 'bypass',
-  });
+  return worker.start({ onUnhandledRequest: 'bypass' });
 }
 
 void enableMocking().then(() => {
