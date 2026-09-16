@@ -162,9 +162,26 @@ export class BusinessService {
           },
         );
 
-      return reviewsResponse.data.reviews || [];
+      const reviews = reviewsResponse.data.reviews || [];
+      return {
+        data: reviews,
+        meta: {
+          totalItems: reviews.length,
+          page: 1,
+          limit: 10,
+          totalPages: Math.ceil(reviews.length / 10) || 0,
+        },
+      };
     } catch {
-      return [];
+      return {
+        data: [],
+        meta: {
+          totalItems: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        },
+      };
     }
-  }
-}
+  } 
+} 
