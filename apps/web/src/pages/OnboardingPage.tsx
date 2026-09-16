@@ -25,7 +25,8 @@ export function OnboardingPage() {
       <div className="w-full max-w-md space-y-6 rounded-xl border bg-card p-8 shadow-sm text-center">
         <h1 className="text-2xl font-bold tracking-tight">Bienvenue sur Wafizo</h1>
         <p className="text-sm text-muted-foreground">
-          Connectez votre compte pour commencer à gérer vos avis clients et optimiser votre visibilité.
+          Connectez votre compte pour commencer à gérer vos avis clients et optimiser votre
+          visibilité.
         </p>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
