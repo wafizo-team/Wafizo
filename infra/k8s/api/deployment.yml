@@ -65,6 +65,11 @@ spec:
                 secretKeyRef:
                   name: wafizo-secrets
                   key: GOOGLE_CALLBACK_URL
+            - name: GOOGLE_BUSINESS_CALLBACK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: wafizo-secrets
+                  key: GOOGLE_BUSINESS_CALLBACK_URL
             - name: JWT_REFRESH_SECRET
               valueFrom:
                 secretKeyRef:
