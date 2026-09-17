@@ -1,15 +1,14 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
   HttpCode,
   HttpStatus,
   Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import { type Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -75,25 +74,33 @@ export class AuthController {
   @Get('google/business/callback')
   @UseGuards(AuthGuard('google-business'))
   async googleBusinessAuthCallback(@Req() req: RequestWithUser) {
-    const user = req.user;
+    const googleUser = req.user;
 
-    const encryptedRefreshToken = user.refreshToken
-      ? encrypt(user.refreshToken)
+    // Récupérer ou créer l'utilisateur dans la base Wafizo pour obtenir son VRAI id interne
+    const dbUser = await this.authService.findOrCreateUser({
+      email: googleUser.email,
+      name: googleUser.name,
+      googleId: googleUser.googleId,
+    });
+
+    const encryptedRefreshToken = googleUser.refreshToken
+      ? encrypt(googleUser.refreshToken)
       : null;
 
     if (encryptedRefreshToken) {
       await this.authService.saveGoogleBusinessToken(
-        user.id,
+        dbUser.id, // <-- Utilise l'ID interne Wafizo et non l'ID Google externe
         encryptedRefreshToken,
       );
     }
 
     return {
       message: 'Google Business connected and token encrypted successfully',
-      email: user.email,
+      email: dbUser.email,
       hasRefreshToken: !!encryptedRefreshToken,
     };
   }
+
   @Get('me')
   async getMe(@Req() req: RequestWithUser & { user: { userId: string } }) {
     return this.authService.findUserById(req.user.userId);
