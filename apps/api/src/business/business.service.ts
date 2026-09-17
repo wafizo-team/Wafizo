@@ -17,7 +17,7 @@ interface AccountsResponseData {
 }
 
 interface LocationsResponseData {
-  locations?: unknown[];
+  locations?: Array<{ name?: string }>;
 }
 
 interface ReviewItem {
@@ -80,6 +80,21 @@ export class BusinessService {
     userId: string,
     googleLocationId: string,
   ): Promise<unknown> {
+    // Vérification que le googleLocationId appartient bien à l'utilisateur
+    const locations = (await this.getGoogleLocations(userId)) as Array<{
+      name?: string;
+    }>;
+    const isValidLocation = locations.some(
+      (loc) =>
+        loc.name === googleLocationId || loc.name?.includes(googleLocationId),
+    );
+
+    if (!isValidLocation) {
+      throw new UnauthorizedException(
+        'Invalid or unauthorized Google location ID for this user.',
+      );
+    }
+
     const existing = await this.prisma.business.findFirst({
       where: { userId },
     });
@@ -90,6 +105,7 @@ export class BusinessService {
         data: {
           googleLocationId,
           connectionStatus: 'CONNECTED',
+          lastSyncAt: new Date(),
         },
       });
     }
@@ -101,6 +117,7 @@ export class BusinessService {
         userId,
         googleLocationId,
         connectionStatus: 'CONNECTED',
+        lastSyncAt: new Date(),
       },
     });
   }
@@ -154,6 +171,12 @@ export class BusinessService {
     const locationPath = business.googleLocationId;
 
     try {
+      // Mise à jour de la date de dernière synchronisation
+      await this.prisma.business.updateMany({
+        where: { userId, googleLocationId: locationPath },
+        data: { lastSyncAt: new Date() },
+      });
+
       const reviewsResponse: AxiosResponse<ReviewsResponseData> =
         await axios.get(
           `https://mybusiness.googleapis.com/v4/${locationPath}/reviews`,
