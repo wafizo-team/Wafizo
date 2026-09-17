@@ -87,4 +87,4 @@
 
 - name: Afficher le statut monitoring
   debug:
-    msg: "{{ monitoring_status.stdout }}"
+    msg: '{{ monitoring_status.stdout }}'

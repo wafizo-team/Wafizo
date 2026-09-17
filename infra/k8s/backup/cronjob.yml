@@ -4,7 +4,7 @@ metadata:
   name: postgres-backup
   namespace: wafizo
 spec:
-  schedule: "0 2 * * *"    # tous les jours à 2h du matin
+  schedule: '0 2 * * *' # tous les jours à 2h du matin
   jobTemplate:
     spec:
       template:
@@ -19,7 +19,7 @@ spec:
                       name: wafizo-secrets
                       key: DATABASE_URL
                 - name: BACKUP_DIR
-                  value: "/backups"
+                  value: '/backups'
               command:
                 - /bin/sh
                 - -c

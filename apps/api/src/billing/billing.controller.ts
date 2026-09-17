@@ -8,12 +8,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BillingService } from './billing.service';
 import { CreateCheckoutSessionDto } from './dto/billing.dto';
 
 interface AuthenticatedRequest extends Request {
-  user: { id: string };
+  user: { userId: string };
   rawBody?: Buffer;
 }
 
@@ -27,7 +28,7 @@ export class BillingController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Récupérer l abonnement actuel' })
   getSubscription(@Req() req: AuthenticatedRequest) {
-    return this.billingService.getSubscription(req.user.id);
+    return this.billingService.getSubscription(req.user.userId);
   }
 
   @Post('checkout')
@@ -38,7 +39,10 @@ export class BillingController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateCheckoutSessionDto,
   ) {
-    return this.billingService.createCheckoutSession(req.user.id, dto.priceId);
+    return this.billingService.createCheckoutSession(
+      req.user.userId,
+      dto.priceId,
+    );
   }
 
   @Post('portal')
@@ -46,7 +50,7 @@ export class BillingController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Créer une session vers le portail Stripe' })
   createPortal(@Req() req: AuthenticatedRequest) {
-    return this.billingService.createCustomerPortalSession(req.user.id);
+    return this.billingService.createCustomerPortalSession(req.user.userId);
   }
 
   @Post('webhook')

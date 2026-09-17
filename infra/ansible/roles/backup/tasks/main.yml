@@ -6,7 +6,7 @@
     state: directory
     owner: root
     group: root
-    mode: "0755"
+    mode: '0755'
 
 - name: Monter le volume de données OVH
   mount:
@@ -23,12 +23,12 @@
     state: directory
     owner: root
     group: root
-    mode: "0750"
+    mode: '0750'
 
 # ─── CronJob Kubernetes ───────────────────────────────────────────────────────
 - name: Copier le manifest CronJob sur le serveur
   copy:
-    src: "{{ playbook_dir }}/../k8s/backup/cronjob.yml"
+    src: '{{ playbook_dir }}/../k8s/backup/cronjob.yml'
     dest: /tmp/cronjob-backup.yml
 
 - name: Créer le namespace wafizo
@@ -45,7 +45,7 @@
 - name: Créer le script de restauration
   copy:
     dest: /usr/local/bin/wafizo-restore
-    mode: "0750"
+    mode: '0750'
     content: |
       #!/bin/bash
       if [ -z "$1" ]; then

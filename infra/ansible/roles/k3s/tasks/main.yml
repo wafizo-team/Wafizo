@@ -27,7 +27,7 @@
     state: directory
     owner: debian
     group: debian
-    mode: "0755"
+    mode: '0755'
 
 - name: Copier le kubeconfig pour debian
   copy:
@@ -36,7 +36,7 @@
     remote_src: yes
     owner: debian
     group: debian
-    mode: "0600"
+    mode: '0600'
 
 # ─── Helm ─────────────────────────────────────────────────────────────────────
 - name: Télécharger et installer Helm

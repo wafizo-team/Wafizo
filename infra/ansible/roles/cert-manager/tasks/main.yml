@@ -53,4 +53,4 @@
 
 - name: Afficher le statut cert-manager
   debug:
-    msg: "{{ certmanager_status.stdout }}"
+    msg: '{{ certmanager_status.stdout }}'

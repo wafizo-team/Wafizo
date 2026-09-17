@@ -4,79 +4,71 @@ import { PrismaService } from '../prisma/prisma.service';
 
 export interface GoogleUser {
   email: string;
-  firstName?: string;
-  familyName?: string;
-  lastName?: string;
-  picture?: string;
+  name: string;
+  googleId: string;
+}
+
+interface JwtPayload {
+  userId: string;
+  email: string;
+  sub: string;
 }
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
     private jwtService: JwtService,
+    private prisma: PrismaService,
   ) {}
 
   async findOrCreateUser(googleUser: GoogleUser) {
-    const email = googleUser.email;
-    const firstName = googleUser.firstName || '';
-    const lastName = googleUser.familyName || googleUser.lastName || '';
-    const name = `${firstName} ${lastName}`.trim() || 'Google User';
-
-    let user = await this.prisma.user.findUnique({ where: { email } });
+    let user = await this.prisma.user.findUnique({
+      where: { email: googleUser.email },
+    });
 
     if (!user) {
       user = await this.prisma.user.create({
-        data: { email, name },
+        data: {
+          email: googleUser.email,
+          name: googleUser.name,
+        },
       });
     }
 
     return user;
   }
 
-  generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload);
+  async generateTokens(user: { id: string; email: string }) {
+    const payload = { sub: user.id, userId: user.id, email: user.email };
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+    });
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
     return { accessToken, refreshToken };
   }
 
-  async googleLogin(req: { user: GoogleUser }) {
-    const googleUser = req.user;
-    if (!googleUser?.email) {
-      return { message: 'No user from Google' };
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify<JwtPayload>(refreshToken);
+      return this.generateTokens({ id: payload.userId, email: payload.email });
+    } catch {
+      throw new Error('Invalid refresh token');
     }
-    const user = await this.findOrCreateUser(googleUser);
-    const { accessToken, refreshToken } = this.generateTokens(
-      user.id,
-      user.email,
-    );
-    return { accessToken, refreshToken, user };
   }
 
-  async findUserById(id: string) {
+  async saveGoogleBusinessToken(userId: string, encryptedToken: string) {
+    return this.prisma.googleTokens.upsert({
+      where: { userId },
+      create: { userId, refreshToken: encryptedToken },
+      update: { refreshToken: encryptedToken },
+    });
+  }
+  async findUserById(userId: string) {
     return this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        businesses: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            sources: {
-              select: {
-                id: true,
-                type: true,
-                externalId: true,
-              },
-            },
-          },
-        },
-      },
+      where: { id: userId },
+      include: { businesses: { include: { sources: true } } },
     });
   }
 }

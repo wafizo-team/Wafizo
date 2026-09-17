@@ -24,28 +24,48 @@ enum ReplyStatus {
   FAILED
 }
 
+enum ConnectionStatus {
+  NOT_CONNECTED
+  CONNECTED
+  SYNC_ERROR
+}
+
 model User {
-  id                      String                   @id @default(uuid())
-  email                   String                   @unique
-  name                    String?
-  googleId                String?                  @unique
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  businesses              Business[]
-  subscription            Subscription?
+  id                     String                    @id @default(uuid())
+  email                  String                    @unique
+  name                   String?
+  googleId               String?                   @unique
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  businesses             Business[]
+  subscription           Subscription?
   notificationPreferences NotificationPreferences?
+  googleTokens           GoogleTokens?
 }
 
 model Business {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sources   Source[]
-  reviews   Review[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String           @id @default(uuid())
+  name             String
+  slug             String           @unique
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionStatus ConnectionStatus @default(NOT_CONNECTED)
+  googleLocationId String?
+  lastSyncAt       DateTime?
+  address          String?
+  sources          Source[]
+  reviews          Review[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model GoogleTokens {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Source {
@@ -81,23 +101,23 @@ model Reply {
 }
 
 model Subscription {
-  id                   String   @id @default(uuid())
-  userId               String   @unique
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan                 Plan     @default(FREE)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  aiGenerationsUsed    Int      @default(0)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                   Plan     @default(FREE)
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  aiGenerationsUsed      Int      @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model NotificationPreferences {
-  id             String  @id @default(uuid())
-  userId         String  @unique
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  emailEnabled   Boolean @default(true)
-  smsEnabled     Boolean @default(false)
-  phoneNumber    String?
-  minRatingAlert Int     @default(3)
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailEnabled     Boolean  @default(true)
+  smsEnabled       Boolean  @default(false)
+  phoneNumber      String?
+  minRatingAlert   Int      @default(3)
 }

@@ -9,7 +9,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
+  console.info('🌱 Starting database seeding...');
 
   // Nettoyage basique (optionnel selon vos besoins)
   await prisma.review.deleteMany();
@@ -258,7 +258,7 @@ async function main() {
       },
     });
   }
-  console.log(`✅ Seeding finished. Inserted ${reviewsData.length} reviews.`);
+  console.info('✨ Database seeding completed successfully.');
 }
 
 main()
