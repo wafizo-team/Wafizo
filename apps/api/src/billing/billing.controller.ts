@@ -10,6 +10,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Public } from '../auth/decorators/public.decorator';
 import { BillingService } from './billing.service';
 import { CreateCheckoutSessionDto } from './dto/billing.dto';
 
@@ -53,6 +54,7 @@ export class BillingController {
     return this.billingService.createCustomerPortalSession(req.user.userId);
   }
 
+  @Public()
   @Post('webhook')
   @ApiOperation({ summary: 'Réception des webhooks Stripe' })
   handleWebhook(
