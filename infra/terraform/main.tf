@@ -12,6 +12,7 @@ provider "openstack" {
   password    = var.openstack_password
   tenant_name = var.openstack_tenant_name
   auth_url    = "https://auth.cloud.ovh.net/v3"
+  domain_name = "Default"
   region      = var.openstack_region
 }
 
@@ -72,6 +73,10 @@ resource "openstack_blockstorage_volume_v3" "wafizo_data" {
   name        = "wafizo-prod-data"
   size        = 30
   description = "Données persistantes : PostgreSQL, volumes K3s, logs"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "openstack_compute_volume_attach_v2" "wafizo_data_attach" {
