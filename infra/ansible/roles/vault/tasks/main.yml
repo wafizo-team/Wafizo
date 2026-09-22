@@ -1,0 +1,37 @@
+---
+# ─── Repo Helm ────────────────────────────────────────────────────────────────
+- name: Ajouter le repo Helm HashiCorp
+  shell: helm repo add hashicorp https://helm.releases.hashicorp.com || true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Mettre à jour les repos Helm
+  shell: helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Installation Vault (standalone, stockage fichier persistant) ────────────
+- name: Installer Vault via Helm
+  shell: |
+    helm upgrade --install vault hashicorp/vault \
+      --namespace vault \
+      --create-namespace \
+      --set "server.dataStorage.enabled=true" \
+      --set "server.dataStorage.size=1Gi" \
+      --set "server.standalone.enabled=true" \
+      --set "ui.enabled=true" \
+      --wait \
+      --timeout 5m
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+# ─── Vérification ─────────────────────────────────────────────────────────────
+- name: Vérifier que Vault est déployé
+  shell: kubectl get pods -n vault
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: vault_status
+
+- name: Afficher le statut Vault
+  debug:
+    msg: '{{ vault_status.stdout }}'
