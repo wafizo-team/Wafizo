@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "build": "pnpm -r --if-present build"
+    "build": "pnpm -r --if-present build",
+    "prepare": "husky"
   },
   "pnpm": {
     "overrides": {
@@ -33,6 +34,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "globals": "^15.0.0",
+    "husky": "^9.1.7",
     "prettier": "^3.3.3",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.0.0"
