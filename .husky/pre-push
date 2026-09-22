@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+echo "🔍 Vérification avant push (lint, typecheck, build)..."
+
+pnpm lint || { echo "❌ Lint échoué — corrige avant de push (pnpm lint:fix peut aider)."; exit 1; }
+pnpm typecheck || { echo "❌ Typecheck échoué — corrige les erreurs de types avant de push."; exit 1; }
+pnpm build || { echo "❌ Build échoué — corrige avant de push."; exit 1; }
+
+echo "✅ Tout est propre, push autorisé."
