@@ -39,7 +39,7 @@
   shell: |
     helm upgrade --install grafana grafana/grafana \
       --namespace monitoring \
-      --set strategy.type=Recreate \
+      --set deploymentStrategy.type=Recreate \
       --set admin.existingSecret=grafana-admin-secret \
       --set admin.userKey=admin-user \
       --set admin.passwordKey=admin-password \
