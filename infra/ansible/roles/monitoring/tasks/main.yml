@@ -39,7 +39,9 @@
   shell: |
     helm upgrade --install grafana grafana/grafana \
       --namespace monitoring \
-      --set adminPassword=Wafizo2026! \
+      --set admin.existingSecret=grafana-admin-secret \
+      --set admin.userKey=admin-user \
+      --set admin.passwordKey=admin-password \
       --set persistence.enabled=true \
       --set persistence.size=2Gi \
       --timeout 5m \
