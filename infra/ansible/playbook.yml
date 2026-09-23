@@ -10,5 +10,5 @@
     - { role: vault, tags: ['vault'] }
     - traefik # 4. Ingress controller
     - cert-manager # 5. Certificats HTTPS Let's Encrypt
-    - monitoring # 6. Prometheus + Grafana + Loki
+    - { role: monitoring, tags: ['monitoring'] } # 6. Prometheus + Grafana + Loki
     - backup # 7. Backups PostgreSQL quotidiens (2 heure du matin)
