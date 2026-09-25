@@ -50,7 +50,7 @@ resource "openstack_compute_instance_v2" "wafizo" {
   key_pair        = openstack_compute_keypair_v2.wafizo_key.name
   security_groups = [data.openstack_networking_secgroup_v2.default_sg.name]
   lifecycle {
-    ignore_changes = [image_id, flavor_id]
+    ignore_changes = [image_id, flavor_id, key_pair]
   }
 
   network {

@@ -15,5 +15,5 @@ output "volume_id" {
 
 output "ssh_command" {
   description = "Commande SSH pour se connecter à l'instance"
-  value       = "ssh admin@${openstack_compute_instance_v2.wafizo.access_ip_v4}"
+  value       = "ssh -i ~/.ssh/id_ed25519_new debian@${openstack_compute_instance_v2.wafizo.access_ip_v4}"
 }

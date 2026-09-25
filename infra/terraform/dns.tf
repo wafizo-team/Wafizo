@@ -32,6 +32,15 @@ resource "ovh_domain_zone_record" "wafizo_fr_api" {
   target    = openstack_compute_instance_v2.wafizo.access_ip_v4
 }
 
+
+resource "ovh_domain_zone_record" "wafizo_fr_support" {
+  zone      = var.domain_wafizo_fr
+  fieldtype = "A"
+  subdomain = "support"
+  ttl       = 300
+  target    = openstack_compute_instance_v2.wafizo.access_ip_v4
+}
+
 # ─── Zone DNS wafizo.com ──────────────────────────────────────────────────────
 
 resource "ovh_domain_zone_record" "wafizo_com_root" {
